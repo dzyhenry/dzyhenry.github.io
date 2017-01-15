@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+  <link rel="icon" href="/favicon.ico">
+  
+  <title>dzyhenry&#39;s blog | ES5 Strict Mode</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox-1.3.4.css">
+  <!--在这里倒入jquery 方便处理部分页面的jquery-->
+  <script src="https://cdn.staticfile.org/jquery/1.7/jquery.min.js" type="text/javascript" ></script>
+</head>
+
+<body>
+	<header class="site-header navfixed-false">
+  <div class="container">
+      <h1><a href="/" title="dzyhenry&#39;s blog"><span class="octicon octicon-mark-github"></span> dzyhenry&#39;s blog</a></h1>
+      <nav class="site-header-nav" role="navigation">
+        
+              
+              <a href="/"  class=" site-header-nav-item hvr-underline-from-center" title="Home">Home</a>
+        
+              
+              <a href="/categories/"  class=" site-header-nav-item hvr-underline-from-center" title="Category">Category</a>
+        
+      </nav>
+  </div>
+</header>
+
+	
+<section class="collection-head geopattern" data-pattern-id="ES5 Strict Mode" >
+    <div class="container">
+        <div class="collection-title">
+            <h1 class="collection-header">
+                ES5 Strict Mode
+            </h1>
+            
+                <div class="collection-info">
+                    <span class="meta-info">
+                        <span class="octicon octicon-calendar"></span>
+                        <time datetime="2016-01-04T18:18:48.000Z" itemprop="datePublished">2016-01-05</time>
+                    </span>
+                    
+                        <span class="meta-info">
+                            <span class="octicon octicon-file-directory"></span>
+                            <a href='/categories/JavaScript/' title=''>JavaScript</a>
+                        </span>
+                    
+                </div>
+            
+        </div>
+    </div>
+</section>
+	<section class="container">
+    <div class="columns">
+        <div class="column three-fourths" >
+            <article class="article-content markdown-body">
+                <h2 id="关于严格模式-Strict-Mode"><a href="#关于严格模式-Strict-Mode" class="headerlink" title="关于严格模式(Strict Mode)"></a>关于严格模式(Strict Mode)</h2><p>我们知道<a href="http://www.zhihu.com/question/24715618" target="_blank" rel="external">ES4</a>过于激进，最终由于没有得到浏览器厂商广泛的支持而不了了之。ES5走的路线相对温和，相对于ES3，除了对象和属性的改造(<a href="http://ejohn.org/blog/ecmascript-5-objects-and-properties/" target="_blank" rel="external">Object/Property</a>)以及JSON引入，并没有太多变化，一些更新的语法和特性留给了下一代ECMAScript版本——ES6 aka Harmony。于是，我们可以说ES5仅仅是在ES3的基础上增加了一些特性。</p>
+<a id="more"></a>
+<p>与此同时，ES3中的某些特性被认为是有错误倾向(error-prone)、不安全(not enough secure)、不易调试检错(poor error checking)的，且有一些特性将要在下一代ECMAScript版本中被废弃的。所以从这个角度上来说，ES5其实是一个过渡性的标准。</p>
+<p>ES5一方面需要兼容ES3，另一方面又需要引导开发者向ES6过渡，于是定义了strict variant或者strict mode。在严格模式(strict mode)中：</p>
+<ol>
+<li>去除了一些ES3中不推荐使用的语法和语义特性，并更新了一些特性的具体语义。</li>
+<li>为了帮助开发者编写更加健壮的代码和更方便地调试代码，某些普通模式下并不会抛异常报错的情形会执行更严格的标准而报错。</li>
+</ol>
+<p>所以，为了写出更健壮更安全的JavaScript代码，<a href="http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/" target="_blank" rel="external">John Resig</a>和<a href="https://www.nczonline.net/blog/2012/03/13/its-time-to-start-using-javascript-strict-mode/" target="_blank" rel="external">NCZ</a>大神也推荐使用严格模式。</p>
+<p><strong>注意</strong></p>
+<blockquote>
+<p>ECMAScript 5的严格模式是JavaScript中的一种限制性更强的变种方式。严格模式不是一个子集：它在语义上与正常代码有着明显的差异。</p>
+</blockquote>
+<p>目前以下浏览器已经支持ES5的strict mode</p>
+<p><img src="./images/es5_strict_mode.png" width="800px" alt="line-box" title="line-box"></p>
+<h2 id="开启严格模式"><a href="#开启严格模式" class="headerlink" title="开启严格模式"></a>开启严格模式</h2><p>开启严格模式有两种方式，分别是在script标签范围内和function范围内。</p>
+<pre><code>- script标签内
+
+    &lt;script&gt;
+        &#39;use strict&#39;;
+        //strict mode code comes here
+    &lt;/script&gt;
+
+    &lt;script&gt;
+        // nomral mode code comes here
+    &lt;/script&gt;
+</code></pre><p>上面的代码出现在同一个文件里面的时候，前一个标签是严格模式，而后一个不是。</p>
+<pre><code>- function内 
+
+    function () {
+        &#39;use strict&#39;;
+        // strict mode code comes here
+    }
+
+- 模块化写法(使用IIFE)
+
+    (function () {
+       &#39;use strict&#39;; 
+       // strict mode code comes here
+    })()
+</code></pre><h2 id="严格模式与普通模式的不同"><a href="#严格模式与普通模式的不同" class="headerlink" title="严格模式与普通模式的不同"></a>严格模式与普通模式的不同</h2><p>下面我们看一下具体有哪些方面的差异：</p>
+<ol>
+<li><p>保留字设定，在strict mode中，新增了保留字：<code>implements, interface, let, package, private, protected, public, static, yield</code>。</p>
+<pre><code> &#39;use strict;&#39;
+ var let = 12; // Syntax Error.
+</code></pre></li>
+<li><p>全局变量必须显示声明</p>
+<pre><code> &#39;use strict&#39;;
+ i = 12; // SyntaxError;
+</code></pre></li>
+<li><p>禁用with</p>
+<pre><code> &#39;use strict&#39;
+ with(x) {  // 抛出异常
+     v = 2;
+ }
+</code></pre></li>
+<li><p>eval作用域。正常模式下，eval语句的作用域，取决于它处于全局作用域还是函数作用域，在严格模式下，在eval()中执行的变量和函数申明不会直接在当前作用域中创建相应变量或函数。另外，<code>eval</code>不能作为函数的参数。(下面这个例子来自<a href="https://www.nczonline.net/blog/2012/03/13/its-time-to-start-using-javascript-strict-mode/" target="_blank" rel="external">NCZ</a>)</p>
+<pre><code> (function() {
+     eval(&quot;var x = 10;&quot;);
+     // Non-strict mode, alerts 10
+     // Strict mode, throws an error because x is undeclared
+     alert(x);
+ }());
+</code></pre></li>
+<li><p>禁止值为<code>null</code>或<code>undefined</code>的<code>this</code>关键字指向全局变量: 对<code>this</code>值为<code>null</code>或<code>undefined</code>的时候，不再让<code>this</code>指向全局变量。因此在使用构造函数时，如果忘了加<code>new</code>关键字，将报错。</p>
+<pre><code> &#39;use strict&#39;
+ function f() {
+     &#39;use strict&#39;;
+     this.a = 12;
+ }
+ f(); //Syntax Error, this is undefined.
+</code></pre></li>
+<li><p>重名错误(No duplicates)</p>
+<ul>
+<li><p>正常模式下，如果对象有多个重名属性，最后赋值的那个属性会覆盖前面的值。严格模式下，这属于语法错误。</p>
+<pre><code>  &#39;use strict&#39;;
+  var obj = {
+      foo: &#39;12&#39;,
+      foo: 12 // Error
+  }; 
+</code></pre></li>
+<li><p>正常模式下，如果函数有多个重名的参数，可以用arguments[i]读取。严格模式下，这属于语法错误。</p>
+<pre><code>  &#39;use strict&#39;;
+  function f(a, b, a) { // Error
+
+  }
+</code></pre></li>
+</ul>
+</li>
+<li><p>任何在正常模式下引起静默失败的赋值操作 (给不可写属性赋值, 给只读属性(getter-only)赋值赋值, 给不可扩展对象(non-extensible object)的新属性赋值) 在严格模式下都会抛出异常。</p>
+<pre><code> var person = {};
+ Object.defineProperty(person, &quot;name&quot;, {
+     writable: false,
+     value: &quot;Nicholas&quot;
+ });
+ // Fails silently in non-strict mode, throws error in strict mode
+ person.name = &quot;John&quot;;
+
+ // This is another example of delete property
+ &quot;use strict&quot;;
+ var x;
+ delete x; // 语法错误
+ var o = Object.create(null, {&#39;x&#39;: {
+     value: 1,
+     configurable: true
+ }});
+ delete o.x; // 删除成功
+</code></pre></li>
+<li><p>禁止八进制表示法</p>
+<pre><code> &#39;use strict&#39;;
+ var n = 0100; // Octal literals are not allowed in strict mode.
+</code></pre></li>
+<li><p>arguments对象</p>
+<ul>
+<li><p>不允许对arguments赋值</p>
+<pre><code>  &#39;use strict;&#39;
+  var arguments = 12; //Unexpected eval or arguments in strict mode
+</code></pre></li>
+<li><p>arguments对象的<code>callee</code>和<code>caller</code>属性被去除，这意味着，你无法在匿名函数内部调用自身了。</p>
+<pre><code>  &#39;use strict&#39;
+  var f = function () {
+      return arguments.callee;
+  }
+  f();  // caller&#39;, &#39;callee&#39;, and &#39;arguments&#39; properties may not be accessed on strict mode functions or the arguments objects for calls to them
+</code></pre></li>
+<li><p>arguments不再追踪参数的变化</p>
+<pre><code>  function f(a) {
+      a = 2;
+      return [a, arguments[0]];
+  }
+  f(1); // 正常模式为[2,2]
+  function f(a) {
+  &quot;use strict&quot;;
+      a = 2;
+      return [a, arguments[0]];
+  }
+  f(1); // 严格模式为[2,1]
+</code></pre></li>
+<li><p>arguments和eval都不能作函数的参数</p>
+<pre><code>  &#39;use strict&#39;;
+  function (eval, arguments) { // Error
+      // some code
+  }
+</code></pre></li>
+</ul>
+</li>
+<li><p>函数必须声明在顶层，将来Javascript的新版本会引入”块级作用域”。为了与新版本接轨，严格模式只允许在全局作用域或函数作用域的顶层声明函数。也就是说，不允许在非函数的代码块内声明函数。</p>
+<pre><code>&quot;use strict&quot;;
+if (true) {
+    function f1() { }
+}
+for (var i = 0; i &lt; 5; i++) {
+    function f2() { }
+}
+f1(); // Reference Error, f1 is not defined.
+f2(); // Reference Error, f2 is not defined.
+</code></pre></li>
+</ol>
+<p>虽然ES6如今已是大势所趋，但ES5仍然占据主流，旧有项目的维护仍然需要ES5，在这个承上启下的阶段，ES5的严格模式需要得到格外关注。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://www.nczonline.net/blog/2012/03/13/its-time-to-start-using-javascript-strict-mode/" target="_blank" rel="external">It’s time to start using JavaScript strict mode, NCZ Online</a></li>
+<li><a href="http://dmitrysoshnikov.com/ecmascript/es5-chapter-2-strict-mode/" target="_blank" rel="external">ECMA-262-5 in detail. Chapter 2. Strict Mode. </a></li>
+<li><a href="http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/" target="_blank" rel="external">ECMAScript 5 Strict Mode, JSON and More</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode" target="_blank" rel="external">Strict Mode, MDN</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2013/01/javascript_strict_mode.html" target="_blank" rel="external">JavaScript严格模式详解，阮一峰</a></li>
+<li><a href="http://java-script.limewebs.com/strictMode/test_hosted.html" target="_blank" rel="external">Douglas Crockford, Stric Mode Is Coming  To Town</a></li>
+<li><a href="http://yanhaijing.com/es5/#638" target="_blank" rel="external">ECMAScript 5, 附录C ECMAScript的严格模式</a></li>
+</ul>
+
+            </article>
+            
+                
+                    
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    /**
+    * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    * LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+
+    s.src = '//dzyhenry.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</div>
+                
+            
+
+        </div>
+        <div class="column one-fourth">
+            
+                
+                <h3>Post Directory</h3>
+
+<div id="post-directory-module">
+	<section class="post-directory">
+		<p><strong class="toc-title">文章目录</strong></p>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#关于严格模式-Strict-Mode"><span class="toc-text">关于严格模式(Strict Mode)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#开启严格模式"><span class="toc-text">开启严格模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#严格模式与普通模式的不同"><span class="toc-text">严格模式与普通模式的不同</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+	</section>
+</div>
+
+            
+        </div>
+    </div>
+</section>
+
+
+<footer class="container">
+    <div class="site-footer" role="contentinfo">
+        <div class="copyright left mobile-block">
+                &copy; 2017
+                <span title="yumemor">dzyhenry</span>
+                <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+        </div>
+
+        <ul class="site-footer-links right mobile-hidden">
+            <li>
+                <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+            </li>
+        </ul>
+
+        <a href="https://github.com/dzyhenry" target="_blank" aria-label="view source code">
+            <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+        </a>
+
+        <ul class="site-footer-links mobile-hidden">
+            
+                  
+                  <li>
+                    <a href="/"  title="Home">Home</a>
+                  </li>
+            
+                  
+                  <li>
+                    <a href="/categories/"  title="Category">Category</a>
+                  </li>
+            
+            <li>
+                <a href="/atom.xml">
+                    <span class="octicon octicon-rss" style="color:orange;"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+		<script src="/js/geopattern.js"></script>
+		<script src="/js/highlight.pack.js"></script>
+		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+
+		
+			<script src="/js/toc.js"></script>
+		
+
+		
+			<script src="/js/search.js"></script>
+
+			<script type="text/javascript">
+				$(function(){
+					var currentIndex = -1;
+					var search_path = "search.xml";
+					if (!search_path) search_path = "search.xml";
+					var path = "/" + search_path;
+					searchFunc(path, 'search', 'local-search-result');
+
+					$(document).delegate("#local-search-result>.search-result-list li","hover",function(){
+						var liNode = $("#local-search-result>.search-result-list li");
+						liNode.removeClass("hover");
+						currentIndex = $("#local-search-result>.search-result-list li").index($(this));
+						liNode.eq(currentIndex).addClass("hover");
+					})
+
+					$("#search-form").submit(function(){
+						return false;
+					})
+
+					$("#search").keydown(function(event){
+						var keyCode = event.keyCode;
+						var liNode = $("#local-search-result>.search-result-list li");
+						if(keyCode == 38 || keyCode == 40 || keyCode == 13){
+							liNode.removeClass("hover");
+							if(keyCode == 38){
+								if(currentIndex - 1 >= 0) currentIndex --;
+							}
+							if(keyCode == 40){
+								if(currentIndex + 1 < liNode.length) currentIndex ++;
+							}
+							if(keyCode == 13){
+								location.href = liNode.eq(currentIndex).find("a").attr("href");
+							}
+							liNode.eq(currentIndex).addClass("hover");
+							return false;
+						}else{
+							currentIndex = -1;
+						}
+					})
+				})
+			</script>
+		
+
+		<script src="/js/index.js"></script>
+
+		 <script src="/js/popular_repo.js"></script> 
+
+	</body>
+</html>

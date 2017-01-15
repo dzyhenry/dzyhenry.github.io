@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+  <link rel="icon" href="/favicon.ico">
+  
+  <title>dzyhenry&#39;s blog | 理解DOM事件模型</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox-1.3.4.css">
+  <!--在这里倒入jquery 方便处理部分页面的jquery-->
+  <script src="https://cdn.staticfile.org/jquery/1.7/jquery.min.js" type="text/javascript" ></script>
+</head>
+
+<body>
+	<header class="site-header navfixed-false">
+  <div class="container">
+      <h1><a href="/" title="dzyhenry&#39;s blog"><span class="octicon octicon-mark-github"></span> dzyhenry&#39;s blog</a></h1>
+      <nav class="site-header-nav" role="navigation">
+        
+              
+              <a href="/"  class=" site-header-nav-item hvr-underline-from-center" title="Home">Home</a>
+        
+              
+              <a href="/categories/"  class=" site-header-nav-item hvr-underline-from-center" title="Category">Category</a>
+        
+      </nav>
+  </div>
+</header>
+
+	
+<section class="collection-head geopattern" data-pattern-id="理解DOM事件模型" >
+    <div class="container">
+        <div class="collection-title">
+            <h1 class="collection-header">
+                理解DOM事件模型
+            </h1>
+            
+                <div class="collection-info">
+                    <span class="meta-info">
+                        <span class="octicon octicon-calendar"></span>
+                        <time datetime="2016-05-12T02:13:41.000Z" itemprop="datePublished">2016-05-12</time>
+                    </span>
+                    
+                        <span class="meta-info">
+                            <span class="octicon octicon-file-directory"></span>
+                            <a href='/categories/DOM/' title=''>DOM</a>
+                        </span>
+                    
+                </div>
+            
+        </div>
+    </div>
+</section>
+	<section class="container">
+    <div class="columns">
+        <div class="column three-fourths" >
+            <article class="article-content markdown-body">
+                <blockquote>
+<p>注：本文内容基本都来自W3C文档，所有关键概念都有出处链接，遇到没解释清楚的地方建议直接阅读原文。</p>
+</blockquote>
+<p>要弄明白DOM的事件模型，先得弄明白DOM是怎么回事儿。DOM不是HTML，DOM与HTML的关系倒是有点儿像ECMAScript和JavaScript的关系。</p>
+<h2 id="About-DOM-Document-Object-Model，文档对象模型"><a href="#About-DOM-Document-Object-Model，文档对象模型" class="headerlink" title="About DOM(Document Object Model，文档对象模型)"></a>About DOM(Document Object Model，文档对象模型)</h2><blockquote>
+<p>The Document Object Model is a platform- and language-neutral interface that will allow programs and scripts to dynamically access and update the content, structure and style of documents. The document can be further processed and the results of that processing can be incorporated back into the presented page.<br>—<a href="https://www.w3.org/DOM/" target="_blank" rel="external">W3C Document Object Model</a></p>
+</blockquote>
+<a id="more"></a>
+<p>正如W3C所定义的，DOM是独立于平台和语言的接口，该接口为程序和脚本提供了对文档的内容、结构和样式的动态获取和更新的功能。</p>
+<p>DOM的出现来自对动态页面的需求，先有DOM的实现（Netscape DOM0），再有各个厂商对DOM实现规范的需求，再有了<a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">W3C Activity Statement</a>对于DOM发展的规范，然后才有了我们所说的“DOM”。</p>
+<h3 id="1-1-DOM发展历史"><a href="#1-1-DOM发展历史" class="headerlink" title="1.1 DOM发展历史"></a>1.1 DOM发展历史</h3><p>下面简单介绍下DOM发展的历史。</p>
+<h4 id="1-1-1-DOM0"><a href="#1-1-1-DOM0" class="headerlink" title="1.1.1 DOM0"></a>1.1.1 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/glossary.html#dt-DOM-Level-0" target="_blank" rel="external">DOM0</a></h4><blockquote>
+<p>The term “DOM Level 0” refers to a mix (not formally specified) of HTML document functionalities offered by Netscape Navigator version 3.0 and Microsoft Internet Explorer version 3.0. In some cases, attributes or methods have been included for reasons of backward compatibility with “DOM Level 0”.</p>
+</blockquote>
+<p>DOM0指的是Necscape3.0和IE3.0提供对于HTML文档功能，实现了包括元素(HTML Element)、表单(Form)、图像(Image)等的接口和方法。DOM0虽然年代久远，某些实现并不符合新的DOM理念，但为了向后兼容，很多现代浏览器仍然支持DOM0的某些方法和属性。即便某些方法的实现原理有所不同，但提供了可用性。DOM0出现后，各厂商意识到DOM的前景，纷纷向W3C建议DOM的规范化。于是出现了W3C DOM Activity Statement以及DOM1、DOM2、DOM3规范(Specification)。W3C关于DOM规范的清单，在<a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">这里</a>。</p>
+<h4 id="1-1-2-DOM1"><a href="#1-1-2-DOM1" class="headerlink" title="1.1.2 DOM1"></a>1.1.2 <a href="https://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/" target="_blank" rel="external">DOM1</a></h4><p>DOM1 1.0版本发布于1998年10月1日，是第一个DOM规范。DOM1包含两部分:</p>
+<ol>
+<li><a href="https://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-core.html" target="_blank" rel="external">DOM1 Core</a>：定义了DOM最基本的接口，包括Document，Node，NodeList等等。</li>
+<li><a href="https://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-html.html" target="_blank" rel="external">DOM1 THML</a>：HTML文档是DOM的一种实现，该规范定义了基于DOM1 Core的HTML文档实现。</li>
+</ol>
+<h4 id="1-1-3-DOM2"><a href="#1-1-3-DOM2" class="headerlink" title="1.1.3 DOM2"></a>1.1.3 <a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">DOM2</a></h4><p>DOM2规范在2000年11月13日发布，主要包含6个模块，相比于DOM1，DOM2更加丰富，更加完善，目前主流浏览器对DOM2有着良好的支持。(关于浏览器支持效果，详见<a href="https://developer.mozilla.org/fr/docs/DOM_Levels" target="_blank" rel="external">MDN DOM Levels</a>)</p>
+<ol>
+<li><a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-249F15BA" target="_blank" rel="external">DOM2 Core</a>: 相比于DOM1 Core，DOM2丰富了Document，Node等接口的功能，详见<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/changes.html#DOMLevel1to2Changes" target="_blank" rel="external">Changes between DOM Level 1 Core and DOM Level 2 Core</a>。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Views/views.html" target="_blank" rel="external">DOM2 View</a>：View提供的是DOM的表现形式，同一个文档源(document source)，可能有不同的表现形式，DOM2 View引入了Abstract View和Document View接口。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html" target="_blank" rel="external">DOM2 Event</a>：DOM 事件处理系统规范，DOM1中并未对DOM的事件模型进行定义，在DOM2中规范事件模型(Event Model)主要有两个目的：1)设计一套通用的事件系统，实现事件处理程序的注册和注销，描述事件的流动(Event Flow)，事件的上下文信息(Contextual Information )等；2)提供一套规范子集兼容老版本浏览器DOM0的事件实现。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Style/" target="_blank" rel="external">DOM2 Style</a>：程序和脚本动态地获取和更新DOM的样式，提供包括Style Sheet, Cascading Style Sheet, CSSRule, CSSStyleDeclaration, getComputedStyle接口。DOM2 Style的实现基于DOM2 Core和DOM2 View。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Traversal-Range/" target="_blank" rel="external">DOM2 Traverse and Range</a>：DOM2 Traverse是关于文档节点遍历的规范，包括Treewalker，NodeIterator和NodeFilter等；DOM2 Range是关于DOM片段(Document Fragment)操作的规范，譬如DocumentFragment。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-HTML/html.html" target="_blank" rel="external">DOM2 HTML</a>：在DOM1 HTML的基础上结合DOM2 Core推出了一些新的接口和属性，具体详见<a href="https://www.w3.org/TR/DOM-Level-2-HTML/changes.html" target="_blank" rel="external">DOM-Level-2-HTML-Changes</a>。</li>
+</ol>
+<h4 id="1-1-4-DOM3"><a href="#1-1-4-DOM3" class="headerlink" title="1.1.4 DOM3"></a>1.1.4 DOM3</h4><p>DOM3首次发布于2004年4月，主要包括Core、Load and Save、Validation、XPath、View and Formatting、Events和Abstract Schemas7个模块。目前主流浏览器对DOM3的支持比较有限。</p>
+<h2 id="DOM-Event-Model"><a href="#DOM-Event-Model" class="headerlink" title="DOM Event Model"></a>DOM Event Model</h2><p>下面将详细介绍DOM事件模型。</p>
+<h3 id="2-1-DOM0级事件"><a href="#2-1-DOM0级事件" class="headerlink" title="2.1 DOM0级事件"></a>2.1 DOM0级事件</h3><p>DOM0是在W3C标准之前的实现，DOM0级事件有以下特点：</p>
+<ol>
+<li><p>DOM0级事件处理程序被认为是元素的方法，要为元素添加事件处理程序，首先必须获取该元素，事件处理程序中的this引用了当前元素。添加事件一般通过下面的方式：</p>
+<pre><code> var btn = document.getElementById(&#39;myBtn&#39;);
+ btn.onclick = function() {
+     alert(this.id);  // &#39;myBtn&#39;
+ }
+</code></pre></li>
+<li><p>一个元素的同一种事件类型的事件处理程序只能有一个，也就是说对同一个事件类型重复赋值事件处理程序，后面的事件处理程序会覆盖之前的事件处理程序。</p>
+</li>
+<li><p>虽然DOM0级事件触发的顺序与DOM2中的冒泡顺序相同，但实际上在DOM0的实现过程中并未有事件流(Event Flow)的的概念，所以DOM0级事件不能够在事件捕获阶段触发。</p>
+</li>
+</ol>
+<h3 id="2-2-DOM2级事件"><a href="#2-2-DOM2级事件" class="headerlink" title="2.2 DOM2级事件"></a>2.2 DOM2级事件</h3><p>在DOM1中，只对DOM Core和DOM HTML有相关说明，所以没有DOM1级事件，所以DOM2级事件是W3C第一个DOM事件系统规范。目前主流浏览器对其有良好支持。</p>
+<h4 id="2-2-1-事件流-Event-Flow"><a href="#2-2-1-事件流-Event-Flow" class="headerlink" title="2.2.1 事件流(Event Flow)"></a>2.2.1 事件流(<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-flow" target="_blank" rel="external">Event Flow</a>)</h4><p>事件流指一个事件在DOM树中从DOM根节点()向目标节点流动，再从目标节点向根节点反向流动的过程，前者称为事件的捕获阶段，后者称为事件的冒泡阶段。能够在DOM中流动的事件都必须实现以下接口规范，该规范定义了事件类型的属性和方法。下面的Event接口规范来自<a href="https://dom.spec.whatwg.org/#introduction-to-dom-events" target="_blank" rel="external">WHTAWG</a>，与W3C<code>DOM2 Event</code>稍稍不同，原因是下面这个是结合了<code>DOM3 Event</code>的 目前主流浏览器实际实现方案。</p>
+<pre><code>[Constructor(DOMString type, optional EventInit eventInitDict),
+Exposed=(Window,Worker)]
+interface Event {
+  readonly attribute DOMString type; // 事件类型，如&#39;click、dbclick、mouseenter、mouseleave等&#39;
+  readonly attribute EventTarget? target; // 事件目标，事件触发以后不会改变。
+  readonly attribute EventTarget? currentTarget; // 当前事件监听程序执行时所在的事件目标，会随着事件的流动改变
+
+  // 事件阶段, 0、事件还未触发；1、事件捕获阶段；2、事件处于目标阶段；3、事件冒泡阶段
+  const unsigned short NONE = 0;
+  const unsigned short CAPTURING_PHASE = 1;
+  const unsigned short AT_TARGET = 2;
+  const unsigned short BUBBLING_PHASE = 3;
+  readonly attribute unsigned short eventPhase; 
+
+  void stopPropagation(); // 停止事件冒泡
+  void stopImmediatePropagation();
+
+  readonly attribute boolean bubbles; // 标识当前事件的状态是否可冒泡
+  readonly attribute boolean cancelable; // 标识当前事件的默认行为是否可取消
+  void preventDefault(); // 阻止事件默认行为
+  readonly attribute boolean defaultPrevented; // 标识当前事件的状态是否被阻止了默认行为
+  readonly attribute boolean scoped;
+
+  [Unforgeable] readonly attribute boolean isTrusted; // 标识当前事件是否由浏览器触发
+  readonly attribute DOMTimeStamp timeStamp;
+
+  void initEvent(DOMString type, boolean bubbles, boolean cancelable); // historical
+};
+</code></pre><p>任何一个事件都有一个相应的事件目标(<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventTarget" target="_blank" rel="external">Event Target</a>)，该事件目标就是Event接口中的targe属性。当事件到达事件目标后，注册在该目标的所有事件监听程序(<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" target="_blank" rel="external">Event Listner</a>)都被触发了。如果事件的捕获(Cpature)或(bubbling)冒泡被关闭，那么该事件的流动将会在该目标上的监听程序执行结束以后停止；反之，则会继续流动。</p>
+<h4 id="2-2-2-事件捕获阶段-Event-Capture"><a href="#2-2-2-事件捕获阶段-Event-Capture" class="headerlink" title="2.2.2 事件捕获阶段(Event Capture)"></a>2.2.2 事件捕获阶段(Event Capture)</h4><p>事件捕获阶段是指事件在到达事件目标(Event Target)之前被注册在目标祖先节点的事件监听程序拦截的过程。捕获的过程往往从根节点出发(一般而言是Document节点)，一直派遣到(dispatch)事件的目标节点。事件在派遣(dispatch)之前，其事件流动链会被初始化，即从文档树的根节点到事件目标的节点序列。</p>
+<p>在事件目标(EventTarget)上注册的事件监听程序(Event Listener)可以在EventTarget的addEventListner方法上通过设置useCapture参数的值为true来实现在事件捕获阶段执行事件监听程序。如果在事件监听程序(Event Listener)执行的过程中调用了Event的<code>stopPropagation</code>方法，该事件将在流动到派遣事件的目标(target)以后停止冒泡。</p>
+<h4 id="2-2-3-事件冒泡阶段-Event-bubbling"><a href="#2-2-3-事件冒泡阶段-Event-bubbling" class="headerlink" title="2.2.3 事件冒泡阶段(Event bubbling)"></a>2.2.3 事件冒泡阶段(Event bubbling)</h4><p>事件冒泡与事件捕获的过程恰好相反，从派遣事件的目标节点到根节点相继执行，冒泡阶段的任一事件监听程序调用<code>stopPropagation</code>都将阻止事件的后续流动。</p>
+<h4 id="2-2-4-事件的取消-Event-cancelation"><a href="#2-2-4-事件的取消-Event-cancelation" class="headerlink" title="2.2.4 事件的取消(Event cancelation)"></a>2.2.4 事件的取消(Event cancelation)</h4><p>对于某些事件，DOM实现(DOM Implementation)为其提供了默认的行为。比如：<code>a</code>标签的<code>click</code>事件，点击<code>a</code>标签，默认行为就是激活超链接。对于这种类型的事件，往往其属性<code>canceable</code>的值为<code>true</code>，在处理这类事件之前，必需先检查该事件类型是否有注册事件监听程序(Event Listener)，并且优先执行这些注册的事件监听程序，这些事件监听程序可以通过调用<code>Event.preventDefault()</code>来取消该事件的默认行为。</p>
+<p>下面这张图很好地表现了DOM事件流。<br><img src="./images/eventflow.png" width="500px" alt="line-box" title="line-box"></p>
+<h4 id="2-2-5-事件监听的管理-Event-Listener-Registration"><a href="#2-2-5-事件监听的管理-Event-Listener-Registration" class="headerlink" title="2.2.5 事件监听的管理(Event Listener Registration)"></a>2.2.5 事件监听的管理(Event Listener Registration)</h4><p>事件监听的管理主要包括事件监听程序的创建、注册、注销，涉及到的接口设计包括<code>Event</code>、<code>Event Target</code>、<code>Event Listener</code>。</p>
+<h4 id="2-2-5-1-Event-Target"><a href="#2-2-5-1-Event-Target" class="headerlink" title="2.2.5.1 Event Target"></a>2.2.5.1 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget" target="_blank" rel="external">Event Target</a></h4><pre><code>// Introduced in DOM Level 2:
+interface EventTarget {
+  void  addEventListener(in DOMString type, in EventListener listener, in boolean useCapture); // 注册事件监听程序
+  void  removeEventListener(in DOMString type, in EventListener listener, in boolean useCapture); // 移除事件监听程序
+  boolean   dispatchEvent(in Event evt)  raises(EventException); // 派遣(触发)事件
+};
+</code></pre><p>对于<code>EventTarget</code>，<strong>所有</strong>实现了DOM事件模型的DOM节点(Node)都实现了接口，也就是说对于任何一个实现了DOM2的DOM Element，都可以调用<code>addEventListener</code>，<code>removeEventListener</code>，<code>dispatchEvent</code>方法。</p>
+<h4 id="2-2-5-2-AddEventListener"><a href="#2-2-5-2-AddEventListener" class="headerlink" title="2.2.5.2 AddEventListener"></a>2.2.5.2 AddEventListener</h4><p>1) 如果一个事件监听程序(Event Listener)的添加时机为事件目标(Event Target)上执行另外一个事件监听程序的过程中，该事件监听程序不会在当前的EventPhase执行，但可能会在之后的Event Phase执行。举个例子：</p>
+<pre><code>var el = document.getElementById(&#39;example&#39;);
+el.addEventListener(&#39;click&#39;, handler, true // useCapture =  true);
+funcition handler() {
+    ... 
+    // do something
+    el.addEventListener(&#39;click&#39;, anotherHandler);
+}
+function anotherHandler() {
+    ...
+    // do something
+    el.removeEventHandler(&#39;click&#39;, anotherHandler); // 避免不断地增加eventHandler
+}
+</code></pre><p>上面的例子中<code>handler</code>会在事件的捕获阶段执行，执行过程中，为该元素又添加了<code>anotherHandler</code>(事件执行会在冒泡阶段)，所以<code>anotherHandler</code>也会执行。当然，这种需求在实际应用中很少见。</p>
+<p>2) 对于相同事件类型(event type)、相同参数的addEventListener调用（也就是完全相同的事件注册），重复添加的事件监听程序会被丢弃。</p>
+<p>3) <code>useCapture</code>为true的事件监听程序，会在事件的捕获阶段执行，但不会在事件冒泡的时候继续执行。</p>
+<h4 id="2-2-5-3-Event-Listener"><a href="#2-2-5-3-Event-Listener" class="headerlink" title="2.2.5.3 Event Listener"></a>2.2.5.3 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventListener" target="_blank" rel="external">Event Listener</a></h4><pre><code>// Introduced in DOM Level 2:
+interface EventListener {
+  void  handleEvent(in Event evt);  // 当对应的事件类型被触发以后调用
+};
+</code></pre><p>Event Listener通过DOM Node调用addEventListener的时候对向该Node的<code>handler list</code>(关于这个handler list，虽然W3C规范里面并未提及，但实现事件的机制基于<a href="https://en.wikipedia.org/wiki/Observer_pattern" target="_blank" rel="external">观察者模式</a>，所以理论上讲应该有一个维护Event Listener的实例，只是不同的User Agent的具体实现方式各异)里面添加该Event Listener。下图就是Chrome DevTools里面看到的注册到<code>li</code>元素的Event Listener。</p>
+<p>注：使用<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-1950641247" target="_blank" rel="external">Node</a>的<code>cloneNode</code>方法并不会将该Node上注册的EventListener注册到复制的新Node上。</p>
+<p><img src="./images/event_listeners.png" width="800px" alt="line-box" title="line-box"></p>
+<h4 id="2-2-5-4-Event"><a href="#2-2-5-4-Event" class="headerlink" title="2.2.5.4 Event"></a>2.2.5.4 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-Event" target="_blank" rel="external">Event</a></h4><p>关于DOM2的Event接口前面已经基本覆盖了， 就不再赘述。</p>
+<pre><code>// Introduced in DOM Level 2:
+interface Event {
+  // PhaseType
+  const unsigned short      CAPTURING_PHASE                = 1;
+  const unsigned short      AT_TARGET                      = 2;
+  const unsigned short      BUBBLING_PHASE                 = 3;
+
+  readonly attribute DOMString        type;
+  readonly attribute EventTarget      target;
+  readonly attribute EventTarget      currentTarget;
+  readonly attribute unsigned short   eventPhase;
+  readonly attribute boolean          bubbles;
+  readonly attribute boolean          cancelable;
+  readonly attribute DOMTimeStamp     timeStamp;
+  void  stopPropagation();
+  void  preventDefault();
+  void  initEvent(in DOMString eventTypeArg,  in boolean canBubbleArg,  in boolean cancelableArg);
+};
+</code></pre><h4 id="2-2-6-自定义事件-Synthetic-Event"><a href="#2-2-6-自定义事件-Synthetic-Event" class="headerlink" title="2.2.6 自定义事件(Synthetic Event)"></a>2.2.6 自定义事件(Synthetic Event)</h4><p>DOM2提供了创建事件的接口：<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-DocumentEvent" target="_blank" rel="external">Document Event Interface</a>，我们可以通过这个接口创建自定义事件，并通过<code>Event Target</code>的<code>addEventListener</code>、<code>removeEventListener</code>、<code>dispatchEvent</code>方法在管理该事件。</p>
+<pre><code>// Introduced in DOM Level 2:
+interface DocumentEvent {
+  Event createEvent(in DOMString eventType)
+                                        raises(DOMException);
+};
+</code></pre><p>举一个简单的使用例子或许更直观</p>
+<pre><code>var e = doucment.createEvent(&#39;MouseEvents&#39;); // 创建Synthetic事件
+e.initMouseEvent(&#39;click&#39;); // 初始化事件类型
+$0.addEventListener(&#39;click&#39;, ev =&gt; console.log(&#39;synthentic event&#39;)); // 事件注册
+$0.dispatchEvent(e); // 事件派遣
+</code></pre><p><img src="./images/synthetic_event.png" width="800px" alt="line-box" title="line-box"><br>上图中事件监听程序触发了两次，一次通过<code>dispatchEvent</code>触发，一次是我click元素时所触发。</p>
+<p>还有另外一种创建自定义事件的方式，这种方式是规范推荐的。</p>
+<pre><code>var e = new Event(&#39;click&#39;); // 直接创建并初始化事件类型，一步到位 
+$0.addEventListener(&#39;click&#39;, ev =&gt; console.log(&#39;synthentic event&#39;)); // 事件注册
+$0.dispatchEvent(e); // 事件派遣 
+</code></pre><p>在DOM3 Event中还提供了<code>CutomerEvent</code>接口，可以在事件中携带信息。</p>
+<pre><code>var e = new CutomerEvent(&#39;click&#39;, {detail: { infoObj }}); // 直接创建并初始化自定义事件类型，并携带事件信息
+$0.addEventListener(&#39;click&#39;, ev =&gt; console.log(&#39;synthentic event&#39;)); // 事件注册
+$0.dispatchEvent(e); // 事件派遣
+</code></pre><p>自定义事件有很多类型，包括<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-UIEvent" target="_blank" rel="external">UIEvent</a>、 MouseEvent,、KeyEvent、HTMLEvent等，这里不再赘述。</p>
+<h3 id="2-3-DOM3级事件"><a href="#2-3-DOM3级事件" class="headerlink" title="2.3 DOM3级事件"></a>2.3 DOM3级事件</h3><p>DOM3级事件规范发布于2003年7月，至今也有10多年了。DOM3 Event基本上是在DOM2 Event的框架下进行了扩展和细致化，这里是DOM3 Event的<a href="https://www.w3.org/TR/2003/NOTE-DOM-Level-3-Events-20031107/changes.html" target="_blank" rel="external">change list</a>。</p>
+<h2 id="DOM-Event的处理流程-DOM-Event-Dispatch"><a href="#DOM-Event的处理流程-DOM-Event-Dispatch" class="headerlink" title="DOM Event的处理流程(DOM Event Dispatch)"></a>DOM Event的处理流程(<a href="https://dom.spec.whatwg.org/#dispatching-events" target="_blank" rel="external">DOM Event Dispatch</a>)</h2><p>本节将简单介绍一下，一个事件从初始化到最终结束的生命周期。</p>
+<h3 id="3-1-观察者模式"><a href="#3-1-观察者模式" class="headerlink" title="3.1 观察者模式"></a>3.1 <a href="https://en.wikipedia.org/wiki/Observer_pattern" target="_blank" rel="external">观察者模式</a></h3><p>事件机制基于观察者模式(<a href="https://en.wikipedia.org/wiki/Observer_pattern" target="_blank" rel="external">Observer Pattern</a>)，一张图足以说明观察着模式的核心内容，</p>
+<p><img src="./images/observer_pattern.png" width="500px" alt="line-box" title="line-box"></p>
+<p>如果应用于DOM事件模型，Subject对应于EventTarget，registerObserver对应于addEventListener方法，unRegisterObserver，对应于removeEventListener方法，notifyObservers对应于dispatchEvent方法。具体对应关系如下图所示。</p>
+<p><img src="./images/observer_pattern_and_event.png" width="500px" alt="line-box" title="line-box"></p>
+<h3 id="3-2-DOM-Event处理流程"><a href="#3-2-DOM-Event处理流程" class="headerlink" title="3.2 DOM Event处理流程"></a>3.2 DOM Event处理流程</h3><ol>
+<li>step 1<br>初始化事件<a href="https://dom.spec.whatwg.org/#dfnReturnLink-11" target="_blank" rel="external">Event Initialization</a>：创建一个事件实体，具体方式有两种方式：1）UA创建native事件以及相应的<code>Event Contextual Information</code>；2）通过Synthetic Event方式自定义DOM事件。</li>
+<li>step 2<br>事件注册： <code>Event Target</code>调用<code>addEventListener</code>方法，添加相应事件类型(Event type)的事件监听程序(Event Listener)。</li>
+<li>step 3<br>事件派遣： <code>Event Target</code>调用<code>dispatchEvent</code>或者UA自己派遣事件。事件派遣的流程比较复杂。主要包含<code>Event</code>在<code>Event Target</code>list(从根节点到target node的所有节点)流动过程中对<code>Event</code>上下文信息的操作，以及是否调用、怎么调用<code>EventListener</code>的<code>handleEvent</code>方法等。具体实现流程请看<a href="https://dom.spec.whatwg.org/#dispatching-events" target="_blank" rel="external">这里</a>(实在无力再整理这个部分了)。</li>
+</ol>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://www.w3.org/DOM/" target="_blank" rel="external">W3C: DOM</a></li>
+<li><a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">W3C: DOM Activity Statement</a></li>
+<li><a href="https://dom.spec.whatwg.org/#dom-event-event" target="_blank" rel="external">WATHWG: DOM Specification</a></li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html" target="_blank" rel="external">W3C: Document Object Model Events</a></li>
+<li><a href="https://developer.mozilla.org/fr/docs/DOM_Levels" target="_blank" rel="external">MDN: DOM Levels</a></li>
+</ul>
+
+            </article>
+            
+                
+                    
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    /**
+    * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    * LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+
+    s.src = '//dzyhenry.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</div>
+                
+            
+
+        </div>
+        <div class="column one-fourth">
+            
+                
+                <h3>Post Directory</h3>
+
+<div id="post-directory-module">
+	<section class="post-directory">
+		<p><strong class="toc-title">文章目录</strong></p>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#About-DOM-Document-Object-Model，文档对象模型"><span class="toc-text">About DOM(Document Object Model，文档对象模型)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-DOM发展历史"><span class="toc-text">1.1 DOM发展历史</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-1-DOM0"><span class="toc-text">1.1.1 DOM0</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-2-DOM1"><span class="toc-text">1.1.2 DOM1</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-3-DOM2"><span class="toc-text">1.1.3 DOM2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#1-1-4-DOM3"><span class="toc-text">1.1.4 DOM3</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DOM-Event-Model"><span class="toc-text">DOM Event Model</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-DOM0级事件"><span class="toc-text">2.1 DOM0级事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-DOM2级事件"><span class="toc-text">2.2 DOM2级事件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-1-事件流-Event-Flow"><span class="toc-text">2.2.1 事件流(Event Flow)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-2-事件捕获阶段-Event-Capture"><span class="toc-text">2.2.2 事件捕获阶段(Event Capture)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-3-事件冒泡阶段-Event-bubbling"><span class="toc-text">2.2.3 事件冒泡阶段(Event bubbling)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-4-事件的取消-Event-cancelation"><span class="toc-text">2.2.4 事件的取消(Event cancelation)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-5-事件监听的管理-Event-Listener-Registration"><span class="toc-text">2.2.5 事件监听的管理(Event Listener Registration)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-5-1-Event-Target"><span class="toc-text">2.2.5.1 Event Target</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-5-2-AddEventListener"><span class="toc-text">2.2.5.2 AddEventListener</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-5-3-Event-Listener"><span class="toc-text">2.2.5.3 Event Listener</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-5-4-Event"><span class="toc-text">2.2.5.4 Event</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-2-6-自定义事件-Synthetic-Event"><span class="toc-text">2.2.6 自定义事件(Synthetic Event)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-DOM3级事件"><span class="toc-text">2.3 DOM3级事件</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#DOM-Event的处理流程-DOM-Event-Dispatch"><span class="toc-text">DOM Event的处理流程(DOM Event Dispatch)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-观察者模式"><span class="toc-text">3.1 观察者模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-DOM-Event处理流程"><span class="toc-text">3.2 DOM Event处理流程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-text">Reference</span></a></li></ol>
+	</section>
+</div>
+
+            
+        </div>
+    </div>
+</section>
+
+
+<footer class="container">
+    <div class="site-footer" role="contentinfo">
+        <div class="copyright left mobile-block">
+                &copy; 2017
+                <span title="yumemor">dzyhenry</span>
+                <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+        </div>
+
+        <ul class="site-footer-links right mobile-hidden">
+            <li>
+                <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+            </li>
+        </ul>
+
+        <a href="https://github.com/dzyhenry" target="_blank" aria-label="view source code">
+            <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+        </a>
+
+        <ul class="site-footer-links mobile-hidden">
+            
+                  
+                  <li>
+                    <a href="/"  title="Home">Home</a>
+                  </li>
+            
+                  
+                  <li>
+                    <a href="/categories/"  title="Category">Category</a>
+                  </li>
+            
+            <li>
+                <a href="/atom.xml">
+                    <span class="octicon octicon-rss" style="color:orange;"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+		<script src="/js/geopattern.js"></script>
+		<script src="/js/highlight.pack.js"></script>
+		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+
+		
+			<script src="/js/toc.js"></script>
+		
+
+		
+			<script src="/js/search.js"></script>
+
+			<script type="text/javascript">
+				$(function(){
+					var currentIndex = -1;
+					var search_path = "search.xml";
+					if (!search_path) search_path = "search.xml";
+					var path = "/" + search_path;
+					searchFunc(path, 'search', 'local-search-result');
+
+					$(document).delegate("#local-search-result>.search-result-list li","hover",function(){
+						var liNode = $("#local-search-result>.search-result-list li");
+						liNode.removeClass("hover");
+						currentIndex = $("#local-search-result>.search-result-list li").index($(this));
+						liNode.eq(currentIndex).addClass("hover");
+					})
+
+					$("#search-form").submit(function(){
+						return false;
+					})
+
+					$("#search").keydown(function(event){
+						var keyCode = event.keyCode;
+						var liNode = $("#local-search-result>.search-result-list li");
+						if(keyCode == 38 || keyCode == 40 || keyCode == 13){
+							liNode.removeClass("hover");
+							if(keyCode == 38){
+								if(currentIndex - 1 >= 0) currentIndex --;
+							}
+							if(keyCode == 40){
+								if(currentIndex + 1 < liNode.length) currentIndex ++;
+							}
+							if(keyCode == 13){
+								location.href = liNode.eq(currentIndex).find("a").attr("href");
+							}
+							liNode.eq(currentIndex).addClass("hover");
+							return false;
+						}else{
+							currentIndex = -1;
+						}
+					})
+				})
+			</script>
+		
+
+		<script src="/js/index.js"></script>
+
+		 <script src="/js/popular_repo.js"></script> 
+
+	</body>
+</html>

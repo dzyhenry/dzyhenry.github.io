@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+  <link rel="icon" href="/favicon.ico">
+  
+  <title>dzyhenry&#39;s blog | Node.js - HTTP</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox-1.3.4.css">
+  <!--在这里倒入jquery 方便处理部分页面的jquery-->
+  <script src="https://cdn.staticfile.org/jquery/1.7/jquery.min.js" type="text/javascript" ></script>
+</head>
+
+<body>
+	<header class="site-header navfixed-false">
+  <div class="container">
+      <h1><a href="/" title="dzyhenry&#39;s blog"><span class="octicon octicon-mark-github"></span> dzyhenry&#39;s blog</a></h1>
+      <nav class="site-header-nav" role="navigation">
+        
+              
+              <a href="/"  class=" site-header-nav-item hvr-underline-from-center" title="Home">Home</a>
+        
+              
+              <a href="/categories/"  class=" site-header-nav-item hvr-underline-from-center" title="Category">Category</a>
+        
+      </nav>
+  </div>
+</header>
+
+	
+<section class="collection-head geopattern" data-pattern-id="Node.js - HTTP" >
+    <div class="container">
+        <div class="collection-title">
+            <h1 class="collection-header">
+                Node.js - HTTP
+            </h1>
+            
+                <div class="collection-info">
+                    <span class="meta-info">
+                        <span class="octicon octicon-calendar"></span>
+                        <time datetime="2017-01-14T17:19:50.000Z" itemprop="datePublished">2017-01-15</time>
+                    </span>
+                    
+                        <span class="meta-info">
+                            <span class="octicon octicon-file-directory"></span>
+                            <a href='/categories/Node-js/' title=''>Node.js</a>
+                        </span>
+                    
+                </div>
+            
+        </div>
+    </div>
+</section>
+	<section class="container">
+    <div class="columns">
+        <div class="column three-fourths" >
+            <article class="article-content markdown-body">
+                <p><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html" target="_blank" rel="external">HTTP</a>模块是Node.js的一个非常重要模块，为Node在搭建HTTP服务提供了非常便利的API，通过HTTP模块，我们可以用短短地十几行代码就可以搭建一个HTTP Server。</p>
+<p>在我看来，HTTP模块是Node.js中一个偏应用层的模块，依赖于EventEmitter、Stream、Net等模块。该模块替应用开发者处理了很多HTTP请求中的细节，文档中的描述主要围绕怎样合理地处理<code>request</code>和<code>response</code>。在学习的同时，也让我了解了HTTP协议中的诸多细节。</p>
+<a id="more"></a>
+<ul>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_agent" target="_blank" rel="external">http.Agent</a>: 管理HTTP client Request中使用的socket池的子模块</li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_clientrequest" target="_blank" rel="external">http.ClientRequest</a>: 一个发送HTTP请求的客户端实例，通过<code>http.request()</code>或者<code>http.get()</code>返回。实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_writable" target="_blank" rel="external">Writable Stream</a>，继承了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/events.html#events_class_eventemitter" target="_blank" rel="external">EventEmitter</a></li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_server" target="_blank" rel="external">http.Server</a>: 一个能够处理HTTP请求的Server实例，通过http.createServer返回。继承了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/net.html#net_class_net_server" target="_blank" rel="external">net.Server</a>，新增了一些API和事件。</li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_serverresponse" target="_blank" rel="external">http.ServerResponse</a>: Node server创建的并处理请求的‘响应对象’。继承自<a href="https://nodejs.org/dist/latest-v7.x/docs/api/events.html#events_class_eventemitter" target="_blank" rel="external">EventEmitter</a>，实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_writable" target="_blank" rel="external">Writable Stream</a>。</li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_incomingmessage" target="_blank" rel="external">http.IncomingMessage</a>: <code>Readable Stream</code></li>
+</ul>
+<h2 id="Class-http-Agent"><a href="#Class-http-Agent" class="headerlink" title="Class: http.Agent"></a>Class: <a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_agent" target="_blank" rel="external">http.Agent</a></h2><blockquote>
+<p>The HTTP Agent is used for pooling sockets used in HTTP client requests.</p>
+</blockquote>
+<h3 id="agent-createConnection-options-callback"><a href="#agent-createConnection-options-callback" class="headerlink" title="agent.createConnection(options[, callback])"></a>agent.createConnection(options[, callback])</h3><ul>
+<li><code>options&lt;Object&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p>创建一个用于HTTP请求的socket或stream。该函数返回一个socket或stream。</p>
+<p><code>callback</code>的函数签名形式是：<code>(err, stream)</code> </p>
+<h3 id="agent-destroy"><a href="#agent-destroy" class="headerlink" title="agent.destroy()"></a>agent.destroy()</h3><p>销毁该agent的所有socket连接</p>
+<h3 id="agent-getName"><a href="#agent-getName" class="headerlink" title="agent.getName()"></a>agent.getName()</h3><blockquote>
+<p>Get a unique name for a set of request options, to determine whether a connection can be reused. In the http agent, this returns host:port:localAddress. In the https agent, the name includes the CA, cert, ciphers, and other HTTPS/TLS-specific options that determine socket reusability.</p>
+</blockquote>
+<h3 id="agent-maxFreeSockets"><a href="#agent-maxFreeSockets" class="headerlink" title="agent.maxFreeSockets"></a>agent.maxFreeSockets</h3><p>设置agent处于free状态时的最大socket数量。(默认值是256)</p>
+<h3 id="agent-maxSockets"><a href="#agent-maxSockets" class="headerlink" title="agent.maxSockets"></a>agent.maxSockets</h3><p>设置该agent与同一个<code>origin(host:port)</code>能够同时连接的最大的socket数量。（默认Infinity）</p>
+<h3 id="agent-requests"><a href="#agent-requests" class="headerlink" title="agent.requests"></a>agent.requests</h3><blockquote>
+<p>An object which contains queues of requests that have not yet been assigned to sockets. Do not modify.</p>
+</blockquote>
+<h3 id="agent-sockets"><a href="#agent-sockets" class="headerlink" title="agent.sockets"></a>agent.sockets</h3><blockquote>
+<p>An object which contains arrays of sockets currently in use by the Agent. Do not modify.</p>
+</blockquote>
+<h2 id="Class-http-ClientRequest"><a href="#Class-http-ClientRequest" class="headerlink" title="Class: http.ClientRequest"></a>Class: <a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_clientrequest" target="_blank" rel="external">http.ClientRequest</a></h2><p><code>ClientRequest</code>对象是Node.js内部创建并由<a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_http_request_options_callback" target="_blank" rel="external">http.request()</a>方法返回。用于表示一个头部(header)已经进入”队列”并处于进行中(in-progress)的HTTP请求。</p>
+<h3 id="Event-‘abort’"><a href="#Event-‘abort’" class="headerlink" title="Event: ‘abort’"></a>Event: ‘abort’</h3><p>当一个请求被客户端中止时触发。</p>
+<blockquote>
+<p>This event is only emitted on the first call to abort().</p>
+</blockquote>
+<h3 id="Event-‘aborted’"><a href="#Event-‘aborted’" class="headerlink" title="Event: ‘aborted’"></a>Event: ‘aborted’</h3><p>当请求被server中止且socket关闭时触发。</p>
+<h3 id="Event-‘connect’"><a href="#Event-‘connect’" class="headerlink" title="Event: ‘connect’"></a>Event: ‘connect’</h3><p>当server端通过<code>CONNECT</code>方法响应一个请求时触发。</p>
+<p>下面的例子来自<a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_connect" target="_blank" rel="external">官方文档</a></p>
+<pre><code class="javascript">/* eslint no-console: 0*/
+const http = require(&#39;http&#39;);
+const net = require(&#39;net&#39;);
+const url = require(&#39;url&#39;);
+
+const proxy = http.createServer((req, res) =&gt; {
+  res.writeHead(200, { &#39;Content-Type&#39;: &#39;text/plain&#39; });
+  res.end(&#39;okay&#39;);
+});
+
+proxy.on(&#39;connect&#39;, (req, cltSocket, head) =&gt; {
+  const srvUrl = url.parse(`http://${req.url}`);
+  const srvSocket = net.connect(srvUrl.port, srvUrl.hostname, () =&gt; {
+    cltSocket.write(&#39;HTTP/1.1 200 Connection Established\r\n&#39; +
+                    &#39;Proxy-agent: Node.js-Proxy\r\n&#39; +
+                    &#39;\r\n&#39;);
+  });
+  srvSocket.write(head);
+  srvSocket.pipe(cltSocket);
+  cltSocket.pipe(srvSocket);
+});
+
+proxy.listen(1337, &#39;127.0.0.1&#39;, () =&gt; {
+  const options = {
+    port: 1337,
+    hostname: &#39;127.0.0.1&#39;,
+    method: &#39;CONNECT&#39;,
+    path: &#39;www.google.com:80&#39;,
+  };
+
+  // 返回一个ClientRequest对象
+  const req = http.request(options);
+  req.end();
+  req.on(&#39;connect&#39;, (res, socket) =&gt; {
+    console.log(&#39;got connected!&#39;);
+
+    // \r\n表示换行，具体可参考[回车和换行](http://www.ruanyifeng.com/blog/2006/04/post_213.html)
+    socket.write(&#39;GET / HTTP/1.1\r\n&#39; +
+                 &#39;HOST: www.google.com:80\r\n&#39; +
+                 &#39;Connection: close\r\n&#39; +
+                 &#39;\r\n&#39;);
+
+    socket.on(&#39;data&#39;, (chunk) =&gt; {
+      console.log(&#39;###socket on data###&#39;, chunk.toString());
+    });
+    socket.on(&#39;end&#39;, () =&gt; {
+      proxy.close();
+    });
+  });
+});
+</code></pre>
+<h3 id="Event-‘continue’"><a href="#Event-‘continue’" class="headerlink" title="Event: ‘continue’"></a>Event: ‘continue’</h3><p>当server响应<code>100 CONTINUE</code>时触发</p>
+<h3 id="Event-‘response’"><a href="#Event-‘response’" class="headerlink" title="Event: ‘response’"></a>Event: ‘response’</h3><p>当请求接受到响应时触发，该事件仅会触发一次。</p>
+<h3 id="Event-‘socket’"><a href="#Event-‘socket’" class="headerlink" title="Event: ‘socket’"></a>Event: ‘socket’</h3><p>当一个socket关联到该请求时触发</p>
+<h3 id="Event-‘upgrade’"><a href="#Event-‘upgrade’" class="headerlink" title="Event: ‘upgrade’"></a>Event: ‘upgrade’</h3><p>当接收到server端的Upgrade响应头时触发。</p>
+<p><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_upgrade" target="_blank" rel="external">官方示例</a></p>
+<pre><code class="javascript">/* eslint no-console: 0 */
+const http = require(&#39;http&#39;);
+
+const server = http.createServer((req, res) =&gt; {
+  res.writeHead(&#39;200&#39;, { &#39;Content-Type&#39;: &#39;text/plain&#39; });
+  res.end(&#39;okay&#39;);
+});
+
+server.on(&#39;upgrade&#39;, (req, socket) =&gt; {
+  socket.write(&#39;HTTP/1.1 101 Web Socket Protocol Handshake\r\n&#39; +
+               &#39;Upgrade: WebSocket\r\n&#39; +
+               &#39;Connection: Upgrade\r\n&#39; +
+               &#39;\r\n&#39;);
+  socket.pipe(socket);
+});
+
+server.listen(1337, &#39;127.0.0.1&#39;, () =&gt; {
+  const options = {
+    port: 1337,
+    hostname: &#39;127.0.0.1&#39;,
+    headers: {
+      Connection: &#39;Upgrade&#39;,
+      Upgrade: &#39;websocket&#39;,
+    },
+  };
+
+  const req = http.request(options);
+  req.end();
+  req.on(&#39;upgrade&#39;, (res, socket) =&gt; {
+    console.log(&#39;got upgrade!&#39;);
+    socket.end();
+    process.exit(0);
+  });
+});
+</code></pre>
+<h3 id="request-abort"><a href="#request-abort" class="headerlink" title="request.abort()"></a>request.abort()</h3><blockquote>
+<p>Marks the request as aborting. Calling this will cause remaining data in the response to be dropped and the socket to be destroyed.</p>
+</blockquote>
+<h3 id="request-end-data-encoding-callback"><a href="#request-end-data-encoding-callback" class="headerlink" title="request.end([data][, encoding][, callback])"></a>request.end([data][, encoding][, callback])</h3><ul>
+<li><code>data&lt;String|Buffer&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<blockquote>
+<p>Finishes sending the request. If any parts of the body are unsent, it will flush them to the stream. If the request is chunked, this will send the terminating ‘0\r\n\r\n’.</p>
+</blockquote>
+<p>如果有<code>data</code>参数，则等同于在<code>request.write(data, encoding)</code>之后调用<code>request.end(callback)</code></p>
+<p>callack在请求的stream结束以后调用。</p>
+<h3 id="request-flushHeaders"><a href="#request-flushHeaders" class="headerlink" title="request.flushHeaders()"></a>request.flushHeaders()</h3><p>flush(直接发送)缓存的headers，从而绕过对于headers优化。</p>
+<blockquote>
+<p>For efficiency reasons, Node.js normally buffers the request headers until you call request.end() or write the first chunk of request data. It then tries hard to pack the request headers and data into a single TCP packet.</p>
+</blockquote>
+<h3 id="request-setTimeout-timeout-callback"><a href="#request-setTimeout-timeout-callback" class="headerlink" title="request.setTimeout(timeout[, callback])"></a>request.setTimeout(timeout[, callback])</h3><ul>
+<li><code>timeout&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code>，当超时发生时触发</li>
+</ul>
+<p>设置请求的超时时间</p>
+<h3 id="request-write-chunk-encoding-callback"><a href="#request-write-chunk-encoding-callback" class="headerlink" title="request.write(chunk[, encoding][, callback])"></a>request.write(chunk[, encoding][, callback])</h3><ul>
+<li><code>chunk&lt;Buffer|String&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<h2 id="Class-http-Server"><a href="#Class-http-Server" class="headerlink" title="Class: http.Server"></a>Class: http.Server</h2><blockquote>
+<p>This class inherits from <a href="https://nodejs.org/dist/latest-v7.x/docs/api/net.html#net_class_net_server" target="_blank" rel="external">net.Server</a>.</p>
+</blockquote>
+<h3 id="Event-‘checkContinue’"><a href="#Event-‘checkContinue’" class="headerlink" title="Event: ‘checkContinue’"></a>Event: ‘checkContinue’</h3><ul>
+<li><code>request&lt;IncomingMessage&gt;</code></li>
+<li><code>response&lt;http.ServerResponse&gt;</code></li>
+</ul>
+<p>当HTTP请求的header中有<code>Expect: 100-continue</code>时触发。</p>
+<blockquote>
+<p>Note that when this event is emitted and handled, the ‘request’ event will not be emitted.</p>
+</blockquote>
+<p>下面是一个示例</p>
+<pre><code class="javascript">/* eslint no-console: 0 */
+const http = require(&#39;http&#39;);
+
+const server = http.createServer((req, res) =&gt; {
+  res.writeHead(200, { &#39;Content-Type&#39;: &#39;text/plain&#39; });
+  res.end(&#39;okay&#39;);
+});
+
+server.on(&#39;checkContinue&#39;, (req, res) =&gt; {
+  console.log(&#39;checkContinue got!&#39;);
+  res.writeContinue();
+});
+
+server.listen(1337, () =&gt; {
+  const options = {
+    port: 1337,
+    hostname: &#39;127.0.0.1&#39;,
+    headers: {
+      Expect: &#39;100-continue&#39;,
+    },
+  };
+  const req = http.request(options);
+  req.end();
+});
+</code></pre>
+<h3 id="Event-‘checkExpectation’"><a href="#Event-‘checkExpectation’" class="headerlink" title="Event: ‘checkExpectation’"></a>Event: ‘checkExpectation’</h3><ul>
+<li><code>request&lt;http.ClientRequest&gt;</code></li>
+<li><code>response&lt;http.ServerResponse&gt;</code></li>
+</ul>
+<p>当HTTP请求头中有<code>Expect</code>字段，且value中没有<code>100-continue</code>时触发。</p>
+<blockquote>
+<p>Note that when this event is emitted and handled, the ‘request’ event will not be emitted.</p>
+</blockquote>
+<h3 id="Event-‘clientError’"><a href="#Event-‘clientError’" class="headerlink" title="Event: ‘clientError’"></a>Event: ‘clientError’</h3><ul>
+<li><code>exception&lt;Error&gt;</code></li>
+<li><code>socket&lt;net.Socket&gt;</code></li>
+</ul>
+<p>正常来讲，一个HTTP请求因为客户端的错误而中断，Server端应该关闭Socket相应的<code>Socket</code>。为了更加优雅地处理这种场景，我们可以在关闭链接的同时以<code>400 Bad Request</code>响应客户端，从而避免唐突地关闭链接。</p>
+<h3 id="Event-‘close’"><a href="#Event-‘close’" class="headerlink" title="Event: ‘close’"></a>Event: ‘close’</h3><p>当server close的时候触发</p>
+<h3 id="Event-‘connect’-1"><a href="#Event-‘connect’-1" class="headerlink" title="Event: ‘connect’"></a>Event: ‘connect’</h3><ul>
+<li><code>request&lt;http.IncomingMessage&gt;</code></li>
+<li><code>socket&lt;net.Socket&gt;</code></li>
+<li><code>head&lt;Buffer&gt;</code>, The first packet of the tunneling stream (may be empty)</li>
+</ul>
+<p>当Server端接收到的HTTP请求中<code>method</code>是<code>connect</code>时触发。</p>
+<blockquote>
+<p>After this event is emitted, the request’s socket will not have a ‘data’ event listener, meaning you will need to bind to it in order to handle data sent to the server on that socket.</p>
+</blockquote>
+<h3 id="Event-‘connection’"><a href="#Event-‘connection’" class="headerlink" title="Event: ‘connection’"></a>Event: ‘connection’</h3><ul>
+<li><code>socket&lt;net.Socket&gt;</code><br>当一个新的TCP Steam创建时触发。</li>
+</ul>
+<h3 id="Event-‘request’"><a href="#Event-‘request’" class="headerlink" title="Event: ‘request’"></a>Event: ‘request’</h3><ul>
+<li><code>request&lt;http.IncomingMessage&gt;</code></li>
+<li><code>response&lt;http.ServerResponse&gt;</code></li>
+</ul>
+<blockquote>
+<p>Emitted each time there is a request. Note that there may be multiple requests per connection (in the case of keep-alive connections).</p>
+</blockquote>
+<h3 id="server-close-callback"><a href="#server-close-callback" class="headerlink" title="server.close([callback])"></a>server.close([callback])</h3><ul>
+<li><code>callback&lt;Function&gt;</code><br>调用后server将不再处理新的HTTP请求，将继续处理已经接收的请求。</li>
+</ul>
+<h3 id="server-listening"><a href="#server-listening" class="headerlink" title="server.listening"></a>server.listening</h3><ul>
+<li><code>&lt;Boolean&gt;</code></li>
+</ul>
+<p>返回一个bool值表示当前server是否在监听请求</p>
+<h3 id="server-maxHeadersCount"><a href="#server-maxHeadersCount" class="headerlink" title="server.maxHeadersCount"></a>server.maxHeadersCount</h3><ul>
+<li><code>&lt;Number&gt;</code><br>设置处理请求的headers的最大数量限制，默认1000。</li>
+</ul>
+<h3 id="server-setTimeout-msecs-callback"><a href="#server-setTimeout-msecs-callback" class="headerlink" title="server.setTimeout(msecs, callback)"></a>server.setTimeout(msecs, callback)</h3><ul>
+<li><code>msecs&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p>为server的<code>sockets</code>设置超时时间，当<code>socket</code>超时以后会调用<code>callback</code></p>
+<h3 id="server-timeout"><a href="#server-timeout" class="headerlink" title="server.timeout"></a>server.timeout</h3><ul>
+<li><code>&lt;Nubmer&gt; Default = 120000(2 minutes)</code></li>
+</ul>
+<p>为后续的连接(connection)设置超时时间</p>
+<blockquote>
+<p>Set to 0 to disable any kind of automatic timeout behavior on incoming connections.</p>
+</blockquote>
+<h2 id="http-ServerResponse"><a href="#http-ServerResponse" class="headerlink" title="http.ServerResponse"></a>http.ServerResponse</h2><p>response是HTTP Server内部创建的对象，<a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_request" target="_blank" rel="external">request</a>事件的第二个参数。<br>response对象实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_writable" target="_blank" rel="external">Writable Stream</a>接口，继承了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/events.html#events_class_eventemitter" target="_blank" rel="external">EventEmitter</a>对象。</p>
+<h3 id="Event-‘close’-1"><a href="#Event-‘close’-1" class="headerlink" title="Event: ‘close’"></a>Event: ‘close’</h3><blockquote>
+<p>Indicates that the underlying connection was terminated before response.end() was called or able to flush.</p>
+</blockquote>
+<h3 id="Event-‘finish’"><a href="#Event-‘finish’" class="headerlink" title="Event: ‘finish’"></a>Event: ‘finish’</h3><p>当请求结束的时候触发此事件。</p>
+<blockquote>
+<p>After this event, no more events will be emitted on the response object.</p>
+</blockquote>
+<h3 id="response-addTrailers-headers"><a href="#response-addTrailers-headers" class="headerlink" title="response.addTrailers(headers)"></a>response.addTrailers(headers)</h3><ul>
+<li><code>headers&lt;Object&gt;</code></li>
+</ul>
+<blockquote>
+<p>This method adds HTTP trailing headers (a header but at the end of the message) to the response.</p>
+</blockquote>
+<h3 id="response-end-data-encoding-callback"><a href="#response-end-data-encoding-callback" class="headerlink" title="response.end([data][, encoding][, callback])"></a>response.end([data][, encoding][, callback])</h3><ul>
+<li><code>data&lt;Buffer|String&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p><code>response.end()</code>方法的调用表示该请求的结束。<strong>每一个响应都必须调用<code>response.end()</code>来结束该response。</strong></p>
+<blockquote>
+<p>This method signals to the server that all of the response headers and body have been sent; that server should consider this message complete. The method, response.end(), MUST be called on each response.</p>
+</blockquote>
+<h3 id="response-finished"><a href="#response-finished" class="headerlink" title="response.finished"></a>response.finished</h3><ul>
+<li><code>&lt;Boolean&gt;</code></li>
+</ul>
+<p>标识请求是否已经完成</p>
+<h3 id="response-getHeader-name"><a href="#response-getHeader-name" class="headerlink" title="response.getHeader(name)"></a>response.getHeader(name)</h3><ul>
+<li><code>name&lt;String&gt;</code></li>
+</ul>
+<p>返回指定的请求头，name参数不区分大小写</p>
+<h3 id="response-headerSent"><a href="#response-headerSent" class="headerlink" title="response.headerSent"></a>response.headerSent</h3><ul>
+<li><code>&lt;Boolean&gt;</code></li>
+</ul>
+<p>标识请求头是否已经发送</p>
+<h3 id="response-removeHeader-name"><a href="#response-removeHeader-name" class="headerlink" title="response.removeHeader(name)"></a>response.removeHeader(name)</h3><ul>
+<li><code>name&lt;String&gt;</code></li>
+</ul>
+<blockquote>
+<p>Removes a header that’s queued for implicit sending.</p>
+</blockquote>
+<h3 id="response-setHeader-name-value"><a href="#response-setHeader-name-value" class="headerlink" title="response.setHeader(name, value)"></a>response.setHeader(name, value)</h3><ul>
+<li><code>name&lt;String&gt;</code></li>
+<li><code>value&lt;String&gt;</code></li>
+</ul>
+<p>设置单个相应头信息，优先级比<code>response.writeHead()</code>低。</p>
+<pre><code class="javascript">// example
+response.setHeader(&#39;Content-Type&#39;, &#39;text/html&#39;);
+</code></pre>
+<p>or</p>
+<pre><code class="javascript">response.setHeader(&#39;Set-Cookie&#39;, [&#39;type=ninja&#39;, &#39;language=javascript&#39;]);
+</code></pre>
+<h3 id="response-setTimeout-msecs-callback"><a href="#response-setTimeout-msecs-callback" class="headerlink" title="response.setTimeout(msecs, callback)"></a>response.setTimeout(msecs, callback)</h3><ul>
+<li><code>msecs&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p>设置Socket的超时时间。</p>
+<blockquote>
+<p>If no ‘timeout’ listener is added to the request, the response, or the server, then sockets are destroyed when they time out. If you assign a handler on the request, the response, or the server’s ‘timeout’ events, then it is your responsibility to handle timed out sockets.</p>
+</blockquote>
+<h3 id="response-statusCode"><a href="#response-statusCode" class="headerlink" title="response.statusCode"></a>response.statusCode</h3><ul>
+<li><code>&lt;Number&gt;</code></li>
+</ul>
+<p>为响应设置状态码</p>
+<pre><code class="javascript">// example
+response.statusCode = 404;
+</code></pre>
+<h3 id="response-statusMessage"><a href="#response-statusMessage" class="headerlink" title="response.statusMessage"></a>response.statusMessage</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<p>为响应设置状态消息</p>
+<pre><code class="javascript">// example
+response.statusMessage = &#39;Not Found&#39;
+</code></pre>
+<h3 id="resonse-write-chunk-encoding-callback"><a href="#resonse-write-chunk-encoding-callback" class="headerlink" title="resonse.write(chunk[, encoding][, callback]);"></a>resonse.write(chunk[, encoding][, callback]);</h3><ul>
+<li><code>chunk&lt;Buffer|String&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+<li><code>Returns: &lt;Boolean&gt;</code></li>
+</ul>
+<blockquote>
+<p>If this method is called and <code>response.writeHead()</code> has not been called, it will switch to implicit header mode and flush the implicit headers.</p>
+<p>The first time <code>response.write()</code> is called, it will send the buffered header information and the first body to the client. The second time response.write() is called, Node.js assumes you’re going to be streaming data, and sends that separately. That is, the response is buffered up to the first chunk of body.</p>
+<p>Returns true if the entire data was flushed successfully to the kernel buffer. Returns false if all or part of the data was queued in user memory. ‘drain’ will be emitted when the buffer is free again.</p>
+</blockquote>
+<h3 id="response-writeHead-statusCode-statusMessage-headers"><a href="#response-writeHead-statusCode-statusMessage-headers" class="headerlink" title="response.writeHead(statusCode[, statusMessage][, headers])"></a>response.writeHead(statusCode[, statusMessage][, headers])</h3><ul>
+<li><code>statusCode&lt;Number&gt;</code></li>
+<li><code>statusMessage&lt;String&gt;</code></li>
+<li><code>headers&lt;Object&gt;</code></li>
+</ul>
+<p>response.writeHead会显式地在响应中设置头信息，在同一个response中writeHead方法只能调用一次, 且优先级高于<code>response.setHeader()</code>方法。<code>response.writeHead()</code>必须在<code>response.end()</code>方法之前调用。</p>
+<blockquote>
+<p>This method must only be called once on a message and it must be called before response.end() is called.</p>
+</blockquote>
+<h2 id="Class-http-IncomingMessage"><a href="#Class-http-IncomingMessage" class="headerlink" title="Class: http.IncomingMessage"></a>Class: http.IncomingMessage</h2><p><code>IncomingMessage</code>由http.Server或者http.ClientRequest创建，并且分别作为<code>request(http.Server)</code>和<code>response(http.clientRequest)</code>事件的第一个参数。实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_readable" target="_blank" rel="external">Readable Stream</a>接口。</p>
+<h3 id="Event-‘aborted’-1"><a href="#Event-‘aborted’-1" class="headerlink" title="Event: ‘aborted’"></a>Event: ‘aborted’</h3><blockquote>
+<p>Emitted when the request has been aborted by the client and the network socket has closed.</p>
+</blockquote>
+<h3 id="Event-‘close’-2"><a href="#Event-‘close’-2" class="headerlink" title="Event: ‘close’"></a>Event: ‘close’</h3><blockquote>
+<p>Indicates that the underlying connection was closed. Just like ‘end’, this event occurs only once per response.</p>
+</blockquote>
+<h3 id="message-destroy-error"><a href="#message-destroy-error" class="headerlink" title="message.destroy([error])"></a>message.destroy([error])</h3><ul>
+<li><code>error&lt;Error&gt;</code></li>
+</ul>
+<p>在接收此message的socket上调用destroy方法。</p>
+<h3 id="message-headers"><a href="#message-headers" class="headerlink" title="message.headers"></a>message.headers</h3><ul>
+<li><code>&lt;Object&gt;</code></li>
+</ul>
+<p>请求头对象(key都是小写)。</p>
+<h3 id="message-httpVersion"><a href="#message-httpVersion" class="headerlink" title="message.httpVersion"></a>message.httpVersion</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<p>http版本</p>
+<h3 id="message-method"><a href="#message-method" class="headerlink" title="message.method"></a>message.method</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<blockquote>
+<p>Only valid for request obtained from <code>http.Server</code>.</p>
+</blockquote>
+<h3 id="message-rawHeaders"><a href="#message-rawHeaders" class="headerlink" title="message.rawHeaders"></a>message.rawHeaders</h3><ul>
+<li><code>&lt;Array&gt;</code></li>
+</ul>
+<p>rawHeaders把header的key和value放在同一个数组中。奇数位是key，偶数位是value。形式如下：</p>
+<pre><code class="javascript">[ &#39;user-agent&#39;,
+   &#39;this is invalid because there can be only one&#39;,
+   &#39;User-Agent&#39;,
+   &#39;curl/7.22.0&#39;,
+   &#39;Host&#39;,
+   &#39;127.0.0.1:8000&#39;,
+   &#39;ACCEPT&#39;,
+   &#39;*/*&#39; ]
+</code></pre>
+<blockquote>
+<p>Note that the keys and values are in the same list. It is not a list of tuples. So, the even-numbered offsets are key values, and the odd-numbered offsets are the associated values.</p>
+<pre><code class="javascript">
+</code></pre>
+</blockquote>
+<h3 id="message-rawTrailers-amp-message-trailers"><a href="#message-rawTrailers-amp-message-trailers" class="headerlink" title="message.rawTrailers &amp; message.trailers"></a>message.rawTrailers &amp; message.trailers</h3><ul>
+<li><code>&lt;Array&gt;</code></li>
+</ul>
+<blockquote>
+<p><code>rawTrailers</code> The raw request/response trailer keys and values exactly as they were received. Only populated at the ‘end’ event.</p>
+<p><code>trailers</code> The request/response trailers object. Only populated at the ‘end’ event.</p>
+</blockquote>
+<h3 id="message-setTimeout-msecs-callback"><a href="#message-setTimeout-msecs-callback" class="headerlink" title="message.setTimeout(msecs, callback)"></a>message.setTimeout(msecs, callback)</h3><ul>
+<li><code>msecs&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<blockquote>
+<p>调用<code>message.connection.setTimeout(msecs, callback)</code>.</p>
+</blockquote>
+<h3 id="message-statusCode-amp-message-statusMessage"><a href="#message-statusCode-amp-message-statusMessage" class="headerlink" title="message.statusCode &amp; message.statusMessage"></a>message.statusCode &amp; message.statusMessage</h3><p>只有http.clientRequest的response事件处理程序中才有。</p>
+<h3 id="message-socket"><a href="#message-socket" class="headerlink" title="message.socket"></a>message.socket</h3><p>返回该连接中的socket</p>
+<h3 id="message-url"><a href="#message-url" class="headerlink" title="message.url"></a>message.url</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<blockquote>
+<p>Only valid for request obtained from http.Server.</p>
+</blockquote>
+<h2 id="http-createServer-requestListener"><a href="#http-createServer-requestListener" class="headerlink" title="http.createServer([requestListener])"></a>http.createServer([requestListener])</h2><ul>
+<li>Returns <code>&lt;http.Server&gt;</code><br>返回一个新的http.Server的实例</li>
+</ul>
+<p>requestListener会自动添加到返回的<code>http.Server</code>的request事件上。</p>
+<blockquote>
+<p>The requestListener is a function which is automatically added to the <a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_request" target="_blank" rel="external">request</a> event.</p>
+</blockquote>
+<h2 id="http-get-options-callback"><a href="#http-get-options-callback" class="headerlink" title="http.get(options[, callback])"></a>http.get(options[, callback])</h2><ul>
+<li><code>options&lt;Object&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+<li>Returns <code>&lt;http.ClientRequest&gt;</code></li>
+</ul>
+<p>通常情况下get请求没有请求体，相比于<code>http.request</code>，<code>http.get</code>方法提供了一个比较便利的API，它们最主要的区别在于<code>http.get</code>将请求的method设置为了get，且自动调用了req.end()方法。</p>
+<blockquote>
+<p>Since most requests are GET requests without bodies, Node.js provides this convenience method. The only difference between this method and http.request() is that it sets the method to GET and calls req.end() automatically. Note that response data must be consumed in the callback for reasons stated in http.ClientRequest section.</p>
+</blockquote>
+<h2 id="http-globalAgent"><a href="#http-globalAgent" class="headerlink" title="http.globalAgent"></a>http.globalAgent</h2><ul>
+<li><code>&lt;http.Agent&gt;</code></li>
+</ul>
+<blockquote>
+<p>Global instance of Agent which is used as the default for all HTTP client requests.</p>
+</blockquote>
+<h2 id="http-request-options-callback"><a href="#http-request-options-callback" class="headerlink" title="http.request(options[, callback])"></a>http.request(options[, callback])</h2><ul>
+<li><code>options&lt;Object&gt;</code><ul>
+<li><code>protocal&lt;String&gt;</code> 默认’http’</li>
+<li><code>host&lt;String&gt;</code> 请求的域名或者IP，默认’localhost’</li>
+<li><code>hostname&lt;String&gt;</code> <code>host</code>的别称，优先级高于<code>host</code></li>
+<li><code>family&lt;Number&gt;</code> ip地址族，有效值是4或者6，默认情况是IPV4和IPV6都会使用。</li>
+<li><code>port&lt;Number&gt;</code> 请求的远程服务的端口，默认值：80</li>
+<li><code>localAddress&lt;String&gt;</code> Local interface to bind for network connections</li>
+<li><code>socketPath&lt;String&gt;</code> Unix的socket路径：<code>host:port</code></li>
+<li><code>method&lt;String&gt;</code> 请求的HTTP方法，默认使用’GET’</li>
+<li><code>path&lt;String&gt;</code> 请求路径，默认<code>/</code></li>
+<li><code>headers&lt;Object&gt;</code> 请求头</li>
+<li><code>auth&lt;String&gt;</code> Basic authentication</li>
+<li><code>agent&lt;http.Agent&gt;|&lt;Boolean&gt;</code> 控制Agent的行为</li>
+<li><code>createConnection&lt;Function&gt;</code> 当agent未设置时，此方法用于创建用于请求的<code>socket/stream</code></li>
+<li><code>timeout&lt;Number&gt;</code> 设置请求超时时间</li>
+</ul>
+</li>
+<li><code>callback&lt;Function&gt;</code> </li>
+</ul>
+<blockquote>
+<p>The optional <code>callback</code> parameter will be added as a one time listener for the ‘response’ event.</p>
+<p><code>http.request()</code> returns an instance of the http.ClientRequest class. The ClientRequest instance is a writable stream. If one needs to upload a file with a POST request, then write to the ClientRequest object.</p>
+</blockquote>
+<h1 id="References"><a href="#References" class="headerlink" title="References"></a>References</h1><ul>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html" target="_blank" rel="external">Node.js - HTTP</a></li>
+<li><a href="https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/" target="_blank" rel="external">Anatomy of an Http Transaction</a></li>
+</ul>
+
+            </article>
+            
+                
+                    
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    /**
+    * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    * LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+
+    s.src = '//dzyhenry.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</div>
+                
+            
+
+        </div>
+        <div class="column one-fourth">
+            
+                
+                <h3>Post Directory</h3>
+
+<div id="post-directory-module">
+	<section class="post-directory">
+		<p><strong class="toc-title">文章目录</strong></p>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-Agent"><span class="toc-text">Class: http.Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-createConnection-options-callback"><span class="toc-text">agent.createConnection(options[, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-destroy"><span class="toc-text">agent.destroy()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-getName"><span class="toc-text">agent.getName()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-maxFreeSockets"><span class="toc-text">agent.maxFreeSockets</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-maxSockets"><span class="toc-text">agent.maxSockets</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-requests"><span class="toc-text">agent.requests</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-sockets"><span class="toc-text">agent.sockets</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-ClientRequest"><span class="toc-text">Class: http.ClientRequest</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘abort’"><span class="toc-text">Event: ‘abort’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘aborted’"><span class="toc-text">Event: ‘aborted’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘connect’"><span class="toc-text">Event: ‘connect’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘continue’"><span class="toc-text">Event: ‘continue’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘response’"><span class="toc-text">Event: ‘response’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘socket’"><span class="toc-text">Event: ‘socket’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘upgrade’"><span class="toc-text">Event: ‘upgrade’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-abort"><span class="toc-text">request.abort()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-end-data-encoding-callback"><span class="toc-text">request.end([data][, encoding][, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-flushHeaders"><span class="toc-text">request.flushHeaders()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-setTimeout-timeout-callback"><span class="toc-text">request.setTimeout(timeout[, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-write-chunk-encoding-callback"><span class="toc-text">request.write(chunk[, encoding][, callback])</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-Server"><span class="toc-text">Class: http.Server</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘checkContinue’"><span class="toc-text">Event: ‘checkContinue’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘checkExpectation’"><span class="toc-text">Event: ‘checkExpectation’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘clientError’"><span class="toc-text">Event: ‘clientError’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘close’"><span class="toc-text">Event: ‘close’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘connect’-1"><span class="toc-text">Event: ‘connect’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘connection’"><span class="toc-text">Event: ‘connection’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘request’"><span class="toc-text">Event: ‘request’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-close-callback"><span class="toc-text">server.close([callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-listening"><span class="toc-text">server.listening</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-maxHeadersCount"><span class="toc-text">server.maxHeadersCount</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-setTimeout-msecs-callback"><span class="toc-text">server.setTimeout(msecs, callback)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-timeout"><span class="toc-text">server.timeout</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-ServerResponse"><span class="toc-text">http.ServerResponse</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘close’-1"><span class="toc-text">Event: ‘close’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘finish’"><span class="toc-text">Event: ‘finish’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-addTrailers-headers"><span class="toc-text">response.addTrailers(headers)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-end-data-encoding-callback"><span class="toc-text">response.end([data][, encoding][, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-finished"><span class="toc-text">response.finished</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-getHeader-name"><span class="toc-text">response.getHeader(name)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-headerSent"><span class="toc-text">response.headerSent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-removeHeader-name"><span class="toc-text">response.removeHeader(name)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-setHeader-name-value"><span class="toc-text">response.setHeader(name, value)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-setTimeout-msecs-callback"><span class="toc-text">response.setTimeout(msecs, callback)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-statusCode"><span class="toc-text">response.statusCode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-statusMessage"><span class="toc-text">response.statusMessage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#resonse-write-chunk-encoding-callback"><span class="toc-text">resonse.write(chunk[, encoding][, callback]);</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-writeHead-statusCode-statusMessage-headers"><span class="toc-text">response.writeHead(statusCode[, statusMessage][, headers])</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-IncomingMessage"><span class="toc-text">Class: http.IncomingMessage</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘aborted’-1"><span class="toc-text">Event: ‘aborted’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘close’-2"><span class="toc-text">Event: ‘close’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-destroy-error"><span class="toc-text">message.destroy([error])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-headers"><span class="toc-text">message.headers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-httpVersion"><span class="toc-text">message.httpVersion</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-method"><span class="toc-text">message.method</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-rawHeaders"><span class="toc-text">message.rawHeaders</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-rawTrailers-amp-message-trailers"><span class="toc-text">message.rawTrailers & message.trailers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-setTimeout-msecs-callback"><span class="toc-text">message.setTimeout(msecs, callback)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-statusCode-amp-message-statusMessage"><span class="toc-text">message.statusCode & message.statusMessage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-socket"><span class="toc-text">message.socket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-url"><span class="toc-text">message.url</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-createServer-requestListener"><span class="toc-text">http.createServer([requestListener])</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-get-options-callback"><span class="toc-text">http.get(options[, callback])</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-globalAgent"><span class="toc-text">http.globalAgent</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-request-options-callback"><span class="toc-text">http.request(options[, callback])</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#References"><span class="toc-text">References</span></a>
+	</section>
+</div>
+
+            
+        </div>
+    </div>
+</section>
+
+
+<footer class="container">
+    <div class="site-footer" role="contentinfo">
+        <div class="copyright left mobile-block">
+                &copy; 2017
+                <span title="yumemor">dzyhenry</span>
+                <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+        </div>
+
+        <ul class="site-footer-links right mobile-hidden">
+            <li>
+                <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+            </li>
+        </ul>
+
+        <a href="https://github.com/dzyhenry" target="_blank" aria-label="view source code">
+            <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+        </a>
+
+        <ul class="site-footer-links mobile-hidden">
+            
+                  
+                  <li>
+                    <a href="/"  title="Home">Home</a>
+                  </li>
+            
+                  
+                  <li>
+                    <a href="/categories/"  title="Category">Category</a>
+                  </li>
+            
+            <li>
+                <a href="/atom.xml">
+                    <span class="octicon octicon-rss" style="color:orange;"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+		<script src="/js/geopattern.js"></script>
+		<script src="/js/highlight.pack.js"></script>
+		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+
+		
+			<script src="/js/toc.js"></script>
+		
+
+		
+			<script src="/js/search.js"></script>
+
+			<script type="text/javascript">
+				$(function(){
+					var currentIndex = -1;
+					var search_path = "search.xml";
+					if (!search_path) search_path = "search.xml";
+					var path = "/" + search_path;
+					searchFunc(path, 'search', 'local-search-result');
+
+					$(document).delegate("#local-search-result>.search-result-list li","hover",function(){
+						var liNode = $("#local-search-result>.search-result-list li");
+						liNode.removeClass("hover");
+						currentIndex = $("#local-search-result>.search-result-list li").index($(this));
+						liNode.eq(currentIndex).addClass("hover");
+					})
+
+					$("#search-form").submit(function(){
+						return false;
+					})
+
+					$("#search").keydown(function(event){
+						var keyCode = event.keyCode;
+						var liNode = $("#local-search-result>.search-result-list li");
+						if(keyCode == 38 || keyCode == 40 || keyCode == 13){
+							liNode.removeClass("hover");
+							if(keyCode == 38){
+								if(currentIndex - 1 >= 0) currentIndex --;
+							}
+							if(keyCode == 40){
+								if(currentIndex + 1 < liNode.length) currentIndex ++;
+							}
+							if(keyCode == 13){
+								location.href = liNode.eq(currentIndex).find("a").attr("href");
+							}
+							liNode.eq(currentIndex).addClass("hover");
+							return false;
+						}else{
+							currentIndex = -1;
+						}
+					})
+				})
+			</script>
+		
+
+		<script src="/js/index.js"></script>
+
+		 <script src="/js/popular_repo.js"></script> 
+
+	</body>
+</html>

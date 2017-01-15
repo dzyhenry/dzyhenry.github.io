@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+  <link rel="icon" href="/favicon.ico">
+  
+  <title>dzyhenry&#39;s blog | Node.js - process</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox-1.3.4.css">
+  <!--在这里倒入jquery 方便处理部分页面的jquery-->
+  <script src="https://cdn.staticfile.org/jquery/1.7/jquery.min.js" type="text/javascript" ></script>
+</head>
+
+<body>
+	<header class="site-header navfixed-false">
+  <div class="container">
+      <h1><a href="/" title="dzyhenry&#39;s blog"><span class="octicon octicon-mark-github"></span> dzyhenry&#39;s blog</a></h1>
+      <nav class="site-header-nav" role="navigation">
+        
+              
+              <a href="/"  class=" site-header-nav-item hvr-underline-from-center" title="Home">Home</a>
+        
+              
+              <a href="/categories/"  class=" site-header-nav-item hvr-underline-from-center" title="Category">Category</a>
+        
+      </nav>
+  </div>
+</header>
+
+	
+<section class="collection-head geopattern" data-pattern-id="Node.js - process" >
+    <div class="container">
+        <div class="collection-title">
+            <h1 class="collection-header">
+                Node.js - process
+            </h1>
+            
+                <div class="collection-info">
+                    <span class="meta-info">
+                        <span class="octicon octicon-calendar"></span>
+                        <time datetime="2016-12-08T02:13:41.000Z" itemprop="datePublished">2016-12-08</time>
+                    </span>
+                    
+                        <span class="meta-info">
+                            <span class="octicon octicon-file-directory"></span>
+                            <a href='/categories/Node-js/' title=''>Node.js</a>
+                        </span>
+                    
+                </div>
+            
+        </div>
+    </div>
+</section>
+	<section class="container">
+    <div class="columns">
+        <div class="column three-fourths" >
+            <article class="article-content markdown-body">
+                <h2 id="Process"><a href="#Process" class="headerlink" title="Process"></a>Process</h2><p>The process object is a global that provides information about, and control over, the current Node.js process. As a global, it is always available to Node.js applications without using require().</p>
+<a id="more"></a>
+<h2 id="Events"><a href="#Events" class="headerlink" title="Events"></a>Events</h2><h3 id="Event-‘beforeExit’"><a href="#Event-‘beforeExit’" class="headerlink" title="Event: ‘beforeExit’"></a>Event: ‘beforeExit’</h3><ul>
+<li><code>beforeExit</code>事件会在Node的event loop队列为空的时候触发，此时Node的<code>event loop</code>并未终止，也就意味着事件处理程序可以进行异步操作。</li>
+<li>如果process显示终止（譬如：<code>process.exit()</code>, <code>uncaught exception</code>），<code>beforeExit</code>事件不会触发。</li>
+</ul>
+<h3 id="Event-‘exit’"><a href="#Event-‘exit’" class="headerlink" title="Event: ‘exit’"></a>Event: ‘exit’</h3><ul>
+<li><code>process.exit()</code> 调用时触发;</li>
+<li><code>exit</code>事件在<code>event loop</code>队列为空时候触发</li>
+<li>事件监听程序只能处理同步代码。</li>
+</ul>
+<p>下面这段代码可以清晰地反应这两个事件的区别</p>
+<pre><code class="javascript">// 不会输出&#39;exit setTimeout&#39;
+process.on(&#39;exit&#39;, (code) =&gt; {
+  console.log(`About to exit, the exit code is ${code}`);
+  setTimeout(() =&gt; {
+    console.log(&#39;exit setTimeout&#39;);
+  }, 1000);
+});
+
+// 会每隔一秒地输出‘beforeExit setTimeout’
+process.on(&#39;beforeExit&#39;, (code) =&gt; {
+  console.log(`About to exit, the exit code is ${code}`);
+  setTimeout(() =&gt; {
+    console.log(&#39;beforeExit setTimeout&#39;);
+  }, 1000);
+});
+</code></pre>
+<p>所以，<code>exit</code>事件触发后，进程的<code>event loop</code>不会再接受新的代码执行，而<code>beforeExit</code>事件触发以后，event loop能够继续正常的工作。</p>
+<h3 id="Event-‘uncaughtException’"><a href="#Event-‘uncaughtException’" class="headerlink" title="Event: ‘uncaughtException’"></a>Event: ‘uncaughtException’</h3><p>当JavaScript代码执行过程中出现未捕获的异常，并传递到<code>event loop</code>中时，<code>uncaughtException</code>事件就会触发。</p>
+<p>通常来讲，<code>uncaughtException</code>事件触发以后，其事件监听程序应当是程序在真正退出之前执行的最后一段代码，所以<code>uncaughtException</code>事件监听程序的应当用来做释放资源之类的工作。但是，结合前面的两个事件<code>beforeExit</code>，<code>exit</code>，我们会发现一个有趣的现象。</p>
+<pre><code class="javascript">process.on(&#39;beforeExit&#39;, () =&gt; {
+  console.log(&#39;before exit&#39;);
+  setTimeout(() =&gt; {
+    console.log(bk);
+  }, 1000);
+});
+
+setTimeout(() =&gt; {
+  console.log(&#39;This will still run.&#39;);
+}, 500);
+
+// Intentionally cause an exception, but don&#39;t catch it.
+nonexistentFunc();
+console.log(&#39;This will not run.&#39;);
+</code></pre>
+<p>上面的代码中，<code>beforeExit</code>事件不会触发，原因很简单，当程序通过<code>process.exit()</code>或者遇到<code>uncaughtException</code>退出的时候，<code>beforeExit</code>并不会触发。但是，请看看下面的代码：</p>
+<pre><code class="javascript">process.on(&#39;uncaughtException&#39;, (err) =&gt; {
+  console.log(&#39;uncaughtException&#39;, err);
+});
+
+process.on(&#39;beforeExit&#39;, () =&gt; {
+  console.log(&#39;before exit&#39;);
+  setTimeout(() =&gt; {
+    console.log(bk);
+  }, 1000);
+});
+
+setTimeout(() =&gt; {
+  console.log(&#39;This will still run.&#39;);
+}, 500);
+
+// Intentionally cause an exception, but don&#39;t catch it.
+nonexistentFunc();
+console.log(&#39;This will not run.&#39;);
+</code></pre>
+<p>如果你把代码执行一下就会发现，当<code>uncaughtException</code>的事件监听程序被执行以后，后续<code>event loop</code>会继续工作。但正如<a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html#process_event_uncaughtexception" target="_blank" rel="external">文档</a>上所描述的，试图在异常未捕获的情况下，继续正常执行代码，正如在计算机升级的时候突然拔掉电源，总会有机会使得系统崩溃。所以，在实际应用场景中，我们应当确保<code>uncaughtException</code>的事件监听程序应当是当前process执行的最后一段代码。</p>
+<blockquote>
+<p>Attempting to resume normally after an uncaught exception can be similar to pulling out of the power cord when upgrading a computer – nine out of ten times nothing happens - but the 10th time, the system becomes corrupted. –<a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html#process_warning_using_uncaughtexception_correctly" target="_blank" rel="external">process</a></p>
+</blockquote>
+<h3 id="Signal-Events"><a href="#Signal-Events" class="headerlink" title="Signal Events"></a><a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html#process_signal_events" target="_blank" rel="external">Signal Events</a></h3><p>当Node.js进程接收到signal时会触发相应的Signal Events</p>
+<h4 id="SIGTERM-amp-SIGINT"><a href="#SIGTERM-amp-SIGINT" class="headerlink" title="SIGTERM &amp; SIGINT"></a>SIGTERM &amp; SIGINT</h4><p>在Node.js的进程中，可以设置<code>SIGTERM</code>和<code>SIGINT</code>的listener，同时会阻止默认行为。<br>关于<code>SIGINT</code>这个命令在非windows平台可以通过下面这段代码模拟。在终端里面启动Node.js进程以后，通过<code>$Control-C</code>会给进程发送<code>SIGTERM</code>信号，<code>$kill pid</code>会发送<code>SIGINT</code>信号。</p>
+<pre><code class="javascript">// Try press Control-C, which will send a SINGINT signal to the process.
+process.stdin.resume();
+
+// The diffrence between Control-C and Control-D
+// http://superuser.com/questions/169051/whats-the-difference-between-c-and-d-for-unix-mac-os-x-terminal
+process.on(&#39;SIGINT&#39;, () =&gt; {
+  console.log(&#39;Received SIGINT. Press Control-D to exit&#39;);
+});
+</code></pre>
+<blockquote>
+<p>SIGTERM and SIGINT have default handlers on non-Windows platforms that resets the terminal mode before exiting with code 128 + signal number. If one of these signals has a listener installed, its default behavior will be removed (Node.js will no longer exit).</p>
+</blockquote>
+<p>所以在Node.js的http server进程中，如果正在处理某个请求的server进程接收到<code>SIGINT</code>或<code>SIGTERM</code>信号时，我们可以考虑让server处理完这个请求，并且拒绝接下来的请求，然后以一种更优雅的方式关闭。这里有一个方案，来自<a href="http://joseoncode.com/2014/07/21/graceful-shutdown-in-node-dot-js/" target="_blank" rel="external">Graceful shutdown in Node.js</a>：</p>
+<pre><code class="javascript">var http = require(&#39;http&#39;);
+
+var server = http.createServer(function (req, res) {
+  setTimeout(function () { //simulate a long request
+    res.writeHead(200, {&#39;Content-Type&#39;: &#39;text/plain&#39;});
+    res.end(&#39;Hello World\n&#39;);
+  }, 4000);
+}).listen(9090, function (err) {
+  console.log(&#39;listening http://localhost:9090/&#39;);
+  console.log(&#39;pid is &#39; + process.pid);
+});
+
+// Graceful shut down: listen to SIGTERM, excute server.close(). Close the server after processing the last hanging request.
+process.on(&#39;SIGTERM&#39;, function () {
+  server.close(function () {
+    process.exit(0);
+  });
+});
+</code></pre>
+<h4 id="SIGKILL"><a href="#SIGKILL" class="headerlink" title="SIGKILL"></a>SIGKILL</h4><p>在所有平台上，Node.js进程在接收到<code>SIGKILL</code>信号时会无条件的结束进程。</p>
+<blockquote>
+<p>SIGKILL cannot have a listener installed, it will unconditionally terminate Node.js on all platforms.</p>
+</blockquote>
+<h2 id="porcess-abort"><a href="#porcess-abort" class="headerlink" title="porcess.abort"></a>porcess.abort</h2><p>进程立即退出，并生成<a href="https://en.wikipedia.org/wiki/Core_dump" target="_blank" rel="external">core file</a>。</p>
+<blockquote>
+<p>The process.abort() method causes the Node.js process to exit immediately and generate a core file.</p>
+</blockquote>
+<h2 id="process-arch-process-platform"><a href="#process-arch-process-platform" class="headerlink" title="process.arch, process.platform"></a>process.arch, process.platform</h2><ul>
+<li>process.arch: 返回运行Node.js进程的处理器架构，譬如<code>arm</code>, <code>ia32</code>, <code>x64</code></li>
+<li>process.platform: 返回运行Node.js进程的操作系统平台，譬如 <code>linux</code>, <code>windows</code>, <code>darwin</code>, <code>freebsd</code></li>
+</ul>
+<h2 id="process-env-process-argv-process-execArgv"><a href="#process-env-process-argv-process-execArgv" class="headerlink" title="process.env, process.argv, process.execArgv"></a>process.env, process.argv, process.execArgv</h2><ol>
+<li>添加的环境变量：process.env应该在node命令之前，譬如</li>
+</ol>
+<pre><code class="bash">NODE_ENV=production node worker.js
+</code></pre>
+<p>如果写成下面这样，process.env不会有NODE_ENV，参数会被加在process.argv当中。</p>
+<pre><code class="bash">node worker.js NODE_ENV=production
+process.argv returns: [&#39;node&#39;, &#39;worker.js&#39;, &#39;NODE_ENV=production&#39;]
+</code></pre>
+<ol>
+<li>process.execArgv: 返回Node.js进程启动的时候，Node.js的命令行选项。例如：</li>
+</ol>
+<pre><code class="bash">node --harmony script.js --version
+# process.execArgv returns [&#39;--harmony&#39;]
+</code></pre>
+<blockquote>
+<p>The process.execArgv property returns the set of Node.js-specific command-line options passed when the Node.js process was launched. </p>
+</blockquote>
+<ol>
+<li><strong>赋给<code>process.env</code>的值会隐式地转换为<code>String</code>类型。</strong></li>
+</ol>
+<h2 id="process-execPath-procee-cwd"><a href="#process-execPath-procee-cwd" class="headerlink" title="process.execPath, procee.cwd()"></a>process.execPath, procee.cwd()</h2><ol>
+<li><code>process.execPath</code>：返回启动Node.js进程的程序的绝对路径</li>
+<li><code>process.cwd()</code>：返回当前Node.js进程启动的绝对路径</li>
+</ol>
+<pre><code class="javascript">console.log(process.cwd());
+// returns &#39;/Users/henry/demos/node&#39;
+console.log(process.execPah);
+// returns &#39;/Users/henry/.nvm/versions/node/v7.0.0/bin/node&#39;
+</code></pre>
+<h2 id="process-exit-code-process-exitCode"><a href="#process-exit-code-process-exitCode" class="headerlink" title="process.exit([code]), process.exitCode"></a>process.exit([code]), process.exitCode</h2><ol>
+<li><code>process.exit()</code>会使进程强制退出，“挂起”的异步操作会被丢弃。</li>
+<li><code>process.exitCode</code>，为默认情况下的Node.js进程退出设置退出码。</li>
+</ol>
+<h2 id="process-hrtime"><a href="#process-hrtime" class="headerlink" title="process.hrtime()"></a>process.hrtime()</h2><p>返回<code>[second， nanoseconds]</code>的高精度时间元组，可以传入一个process.hrtime()返回值的参数，返回两个时间元组之间的时间差。process.hrtime()可以用来做高精度的性能评估。</p>
+<pre><code class="javascript">const time = process.hrtime();
+
+setTimeout(() =&gt; {
+  const diff = process.hrtime(time);
+
+  console.log(`Benchmark took ${(diff[0] * 1e9) + diff[1]} nanoseconds`);
+  // benchmark took 1000000527 nanoseconds
+}, 1000);
+</code></pre>
+<h2 id="process-kill-pid-signal"><a href="#process-kill-pid-signal" class="headerlink" title="process.kill(pid, [signal])"></a>process.kill(pid, [signal])</h2><p>给指定的<code>processid</code>发送一个信号，默认信号时<code>SIGTERM</code>。</p>
+<p><strong>注：</strong> 此API虽然叫做<code>kill</code>，但其功能仅仅是给指定的进程发送信号，且默认发送的信号是：<code>SINGTERM</code>。</p>
+<blockquote>
+<p>Note:Even though the name of this function is process.kill(), it is really just a signal sender, like the kill system call. The signal sent may do something other than kill the target process.</p>
+</blockquote>
+<h2 id="process-mainModule"><a href="#process-mainModule" class="headerlink" title="process.mainModule"></a>process.mainModule</h2><ul>
+<li>相比于<code>require.main</code>, <code>process.mainModule</code>提供了一种新的方法获取当前主模块。</li>
+<li>与<code>require.main</code>不同的是，<code>require.main</code>在代码执行阶段会改变，而process.main的值则一直是Node.js进程启动时的最初模块。</li>
+</ul>
+<h2 id="process-memoryUsage"><a href="#process-memoryUsage" class="headerlink" title="process.memoryUsage()"></a>process.memoryUsage()</h2><p>返回当前Node.js进程内存使用情况的object，内存单位是Byte。</p>
+<pre><code class="javascript">const util = require(&#39;util&#39;);
+console.log(util.inspect(process.memoryUsage()));
+// prints: { rss: 21262336, heapTotal: 10465280, heapUsed: 4396160 }
+</code></pre>
+<h2 id="process-nextTick"><a href="#process-nextTick" class="headerlink" title="process.nextTick()"></a>process.nextTick()</h2><p>在解释<code>process.nextTick()</code>之前， 有必要先了解一下Node.js中的<code>Event loop</code>是如何工作的，详情可参照<a href="https://github.com/nodejs/node/blob/master/doc/topics/event-loop-timers-and-nexttick.md" target="_blank" rel="external">官网解释</a>。</p>
+<p>下图是Node.js简化版的Event loop，来自<a href="https://github.com/nodejs/node/blob/master/doc/topics/event-loop-timers-and-nexttick.md#poll" target="_blank" rel="external">Node.js的官方文档</a>。</p>
+<pre><code>   ┌───────────────────────┐
+┌─&amp;gt;│        timers         │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+│  │     I/O callbacks     │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+│  │     idle, prepare     │
+│  └──────────┬────────────┘      ┌───────────────┐
+│  ┌──────────┴────────────┐      │   incoming:   │
+│  │         poll          │&amp;lt;─────┤  connections, │
+│  └──────────┬────────────┘      │   data, etc.  │
+│  ┌──────────┴────────────┐      └───────────────┘
+│  │        check          │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+└──┤    close callbacks    │
+   └───────────────────────┘
+</code></pre><blockquote>
+<p>Each phase has a FIFO queue of callbacks to execute. While each phase is special in its own way, generally, when the event loop enters a given phase, it will perform any operations specific to that phase, then execute callbacks in that phase’s queue until the queue has been exhausted or the maximum number of callbacks has executed. When the queue has been exhausted or the callback limit is reached, the event loop will move to the next phase, and so on.</p>
+</blockquote>
+<p>图中的每一个矩形代码Node.js的Event loop的每一个阶段(Phase)。值得一说的是，Node.js的Event loop模型和我们通常理解的浏览器的Event loop是有区别的，主要区别是Node.js对于不同的异步操作类型有不同的处理步骤和方式。具体如下：</p>
+<ul>
+<li><strong>timers</strong>: this phase excutes callbacks scheduled by <code>setTimeout()</code> and <code>setInterval()</code>.</li>
+<li><strong>I/O callbacks</strong>: excutes almost all callbacks with the exception of close callbacks, the ones scheduled by timers.</li>
+<li><strong>idle, prepare</strong>: only used internaly.</li>
+<li><strong>poll</strong>: retrieve new I/O events, node will block here when appropriate.</li>
+<li><strong>check</strong>: <code>setImmediate()</code> callbacks are invoked here.</li>
+<li><strong>close callbacks</strong>: e.g. <code>socket.on(&#39;close&#39;, ...)</code>.</li>
+</ul>
+<h3 id="setImmediate-vs-setTimeout"><a href="#setImmediate-vs-setTimeout" class="headerlink" title="setImmediate vs. setTimeout"></a>setImmediate vs. setTimeout</h3><p>下面的代码，如果处于Node.js进程执行的主模块中，<code>setTimeout</code>和<code>setImmediate</code>的执行顺序是不确定的。</p>
+<pre><code class="javascript">setTimeout(() =&gt; {
+    console.log(&#39;setTimeout&#39;);
+}, 0);
+
+setImmediate(() =&gt; {
+    console.log(&#39;setImmediate&#39;);
+});
+</code></pre>
+<p>由于<code>setTimeout</code>的callback执行是在timers阶段，<code>setImmediate</code>的执行在check阶段，所以<code>setTimeout</code>和<code>setImmediate</code>的执行顺序会依赖于当前process所处的Event loop阶段。</p>
+<blockquote>
+<p>setImmediate and setTimeout() are similar, but behave in different ways depending on when they are called.</p>
+<ul>
+<li>setImmediate() is designed to execute a script once the current poll phase completes.</li>
+<li>setTimeout() schedules a script to be run after a minimum threshold in ms has elapsed.</li>
+</ul>
+<p>The order in which the timers are executed will vary depending on the context in which they are called. If both are called from within the main module, then timing will be bound by the performance of the process (which can be impacted by other applications running on the machine).</p>
+</blockquote>
+<h3 id="process-nextTick-1"><a href="#process-nextTick-1" class="headerlink" title="process.nextTick()"></a>process.nextTick()</h3><p>严格来讲，process.nextTick不处于<code>Event loop</code>的任何阶段。<code>nextTickQueue</code>(<code>process.nextTick</code>的回调队列)会在当前操作(当前phase的执行)执行结束以后执行。 </p>
+<blockquote>
+<p>This is important when developing APIs in order to give users the opportunity to assign event handlers after an object has been constructed but before any I/O has occurred:</p>
+</blockquote>
+<p>根据本节开始处的Event loop示意图。当我们在构造对象后想要理解做一些事情，并且这些事情需要在所有I/O回调执行之前执行时，就有必要使用<code>process.nextTick()</code>，这也是<code>process.nextTick()</code>的用武之地之一。</p>
+<pre><code class="javascript">function MyThing(options) {
+    this.setupOptions(options);
+    process.nextTick(() =&gt; {
+        this.startDoingStuff();
+    });
+}
+var thing = new MyThing();
+thing.getReadyForStuff();
+</code></pre>
+<p>对于<code>process.nextTick()</code>需要注意的是：由于<code>process.nextTick()</code>会在<code>Event loop</code>的任意phase结束后立即执行，递归调用<code>process.nextTick()</code>会阻塞<code>Event loop</code>中的I/O调用。</p>
+<h2 id="process-stdin-process-stdout-process-stderr"><a href="#process-stdin-process-stdout-process-stderr" class="headerlink" title="process.stdin, process.stdout, process.stderr"></a>process.stdin, process.stdout, process.stderr</h2><ul>
+<li><code>process.stdin</code>返回一个与<code>stdin(fd 0)</code>一致或者相关联<code>Readable stream</code>。</li>
+<li><code>process.stdout</code>返回一个与<code>stdout(fd 1)</code>一致或相关联的<code>Writable stream</code>。</li>
+<li><code>process.stderr</code>返回一个与<code>stderr(fd 2)</code>一致或相关联的<code>Writable stream</code>。</li>
+</ul>
+<p>关于<code>process.stderr</code>与<code>process.stdout</code>的区别主要有以下几点:</p>
+<ol>
+<li><code>process.stderr</code>不能被<code>close</code>(<code>end()</code>会抛出异常)</li>
+<li><code>process.stderr</code>不会触发<code>finish</code>事件</li>
+<li><code>process.stderr</code>当输出至文件时，write将会阻塞</li>
+<li><code>process.stdout</code>和<code>process.stderr</code>在Unix平台上，当输出到TTY(Terminal)时，write将会被阻塞</li>
+<li><code>process.stdout</code>和<code>process.stderr</code>在Windows平台上，对于第4点，恰好相反</li>
+</ol>
+<h2 id="TTY-Terminals"><a href="#TTY-Terminals" class="headerlink" title="TTY Terminals"></a>TTY Terminals</h2><p>关于什么是tty，<a href="http://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con" target="_blank" rel="external">这里</a>有一篇科普文。</p>
+<p><code>process.stdout</code>和<code>process.stderr</code>在UNIX平台上当输出至TTYs(Terminals)时是阻塞的，所以可以有效防止<code>stdout</code>和<code>stderr</code>之间的相互干扰。<br>所以有如下方法可以检查Node.js是否在TTY的上下文中运行。</p>
+<pre><code class="bash">$ node -p &quot;Boolean(process.stdin.isTTY)&quot;
+true
+$ echo &quot;foo&quot; | node -p &quot;Boolean(process.stdin.isTTY)&quot;
+false
+
+$ node -p &quot;Boolean(process.stdout.isTTY)&quot;
+true
+$ node -p &quot;Boolean(process.stdout.isTTY)&quot; | cat
+false
+</code></pre>
+<h2 id="process-uptime"><a href="#process-uptime" class="headerlink" title="process.uptime()"></a>process.uptime()</h2><p>返回当前Node.js进程所运行的时间</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html" target="_blank" rel="external">Node.js v7.1.0 Documentation</a></li>
+<li><a href="http://unix.stackexchange.com/questions/76634/what-is-a-process-gid-and-what-purpose-does-it-serve" target="_blank" rel="external">What is a process GID and what purpose does it serve?</a></li>
+<li><a href="https://hackernoon.com/19-things-i-learnt-reading-the-nodejs-docs-8a2dcc7f307f#.exxn0rqoe" target="_blank" rel="external">19 things I’ve learnt from the Node.js Docs</a></li>
+<li><a href="https://github.com/nodejs/node/blob/master/doc/topics/event-loop-timers-and-nexttick.md" target="_blank" rel="external">The Node.js Event Loop, Timers, and process.nextTick()</a></li>
+<li><a href="https://segmentfault.com/a/1190000003063859" target="_blank" rel="external">Linux IO模式及 select、poll、epoll详解</a></li>
+<li><a href="http://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con" target="_blank" rel="external">What is the exat difference between a ‘terminal’, a ‘shell’, a ‘tty’ and a ‘console’</a></li>
+</ul>
+
+            </article>
+            
+                
+                    
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    /**
+    * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    * LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+
+    s.src = '//dzyhenry.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</div>
+                
+            
+
+        </div>
+        <div class="column one-fourth">
+            
+                
+                <h3>Post Directory</h3>
+
+<div id="post-directory-module">
+	<section class="post-directory">
+		<p><strong class="toc-title">文章目录</strong></p>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Process"><span class="toc-text">Process</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Events"><span class="toc-text">Events</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘beforeExit’"><span class="toc-text">Event: ‘beforeExit’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘exit’"><span class="toc-text">Event: ‘exit’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘uncaughtException’"><span class="toc-text">Event: ‘uncaughtException’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Signal-Events"><span class="toc-text">Signal Events</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#SIGTERM-amp-SIGINT"><span class="toc-text">SIGTERM & SIGINT</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SIGKILL"><span class="toc-text">SIGKILL</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#porcess-abort"><span class="toc-text">porcess.abort</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-arch-process-platform"><span class="toc-text">process.arch, process.platform</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-env-process-argv-process-execArgv"><span class="toc-text">process.env, process.argv, process.execArgv</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-execPath-procee-cwd"><span class="toc-text">process.execPath, procee.cwd()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-exit-code-process-exitCode"><span class="toc-text">process.exit([code]), process.exitCode</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-hrtime"><span class="toc-text">process.hrtime()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-kill-pid-signal"><span class="toc-text">process.kill(pid, [signal])</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-mainModule"><span class="toc-text">process.mainModule</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-memoryUsage"><span class="toc-text">process.memoryUsage()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-nextTick"><span class="toc-text">process.nextTick()</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#setImmediate-vs-setTimeout"><span class="toc-text">setImmediate vs. setTimeout</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#process-nextTick-1"><span class="toc-text">process.nextTick()</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-stdin-process-stdout-process-stderr"><span class="toc-text">process.stdin, process.stdout, process.stderr</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TTY-Terminals"><span class="toc-text">TTY Terminals</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#process-uptime"><span class="toc-text">process.uptime()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Reference"><span class="toc-text">Reference</span></a></li></ol>
+	</section>
+</div>
+
+            
+        </div>
+    </div>
+</section>
+
+
+<footer class="container">
+    <div class="site-footer" role="contentinfo">
+        <div class="copyright left mobile-block">
+                &copy; 2017
+                <span title="yumemor">dzyhenry</span>
+                <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+        </div>
+
+        <ul class="site-footer-links right mobile-hidden">
+            <li>
+                <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+            </li>
+        </ul>
+
+        <a href="https://github.com/dzyhenry" target="_blank" aria-label="view source code">
+            <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+        </a>
+
+        <ul class="site-footer-links mobile-hidden">
+            
+                  
+                  <li>
+                    <a href="/"  title="Home">Home</a>
+                  </li>
+            
+                  
+                  <li>
+                    <a href="/categories/"  title="Category">Category</a>
+                  </li>
+            
+            <li>
+                <a href="/atom.xml">
+                    <span class="octicon octicon-rss" style="color:orange;"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+		<script src="/js/geopattern.js"></script>
+		<script src="/js/highlight.pack.js"></script>
+		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+
+		
+			<script src="/js/toc.js"></script>
+		
+
+		
+			<script src="/js/search.js"></script>
+
+			<script type="text/javascript">
+				$(function(){
+					var currentIndex = -1;
+					var search_path = "search.xml";
+					if (!search_path) search_path = "search.xml";
+					var path = "/" + search_path;
+					searchFunc(path, 'search', 'local-search-result');
+
+					$(document).delegate("#local-search-result>.search-result-list li","hover",function(){
+						var liNode = $("#local-search-result>.search-result-list li");
+						liNode.removeClass("hover");
+						currentIndex = $("#local-search-result>.search-result-list li").index($(this));
+						liNode.eq(currentIndex).addClass("hover");
+					})
+
+					$("#search-form").submit(function(){
+						return false;
+					})
+
+					$("#search").keydown(function(event){
+						var keyCode = event.keyCode;
+						var liNode = $("#local-search-result>.search-result-list li");
+						if(keyCode == 38 || keyCode == 40 || keyCode == 13){
+							liNode.removeClass("hover");
+							if(keyCode == 38){
+								if(currentIndex - 1 >= 0) currentIndex --;
+							}
+							if(keyCode == 40){
+								if(currentIndex + 1 < liNode.length) currentIndex ++;
+							}
+							if(keyCode == 13){
+								location.href = liNode.eq(currentIndex).find("a").attr("href");
+							}
+							liNode.eq(currentIndex).addClass("hover");
+							return false;
+						}else{
+							currentIndex = -1;
+						}
+					})
+				})
+			</script>
+		
+
+		<script src="/js/index.js"></script>
+
+		 <script src="/js/popular_repo.js"></script> 
+
+	</body>
+</html>

@@ -1,0 +1,1672 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+    
+    <entry>
+      <title><![CDATA[Node.js - HTTP]]></title>
+      <url>http://blog.dzyhenry.com/2017/01/15/http/</url>
+      <content type="html"><![CDATA[<p><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html" target="_blank" rel="external">HTTP</a>模块是Node.js的一个非常重要模块，为Node在搭建HTTP服务提供了非常便利的API，通过HTTP模块，我们可以用短短地十几行代码就可以搭建一个HTTP Server。</p>
+<p>在我看来，HTTP模块是Node.js中一个偏应用层的模块，依赖于EventEmitter、Stream、Net等模块。该模块替应用开发者处理了很多HTTP请求中的细节，文档中的描述主要围绕怎样合理地处理<code>request</code>和<code>response</code>。在学习的同时，也让我了解了HTTP协议中的诸多细节。</p>
+<a id="more"></a>
+<ul>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_agent" target="_blank" rel="external">http.Agent</a>: 管理HTTP client Request中使用的socket池的子模块</li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_clientrequest" target="_blank" rel="external">http.ClientRequest</a>: 一个发送HTTP请求的客户端实例，通过<code>http.request()</code>或者<code>http.get()</code>返回。实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_writable" target="_blank" rel="external">Writable Stream</a>，继承了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/events.html#events_class_eventemitter" target="_blank" rel="external">EventEmitter</a></li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_server" target="_blank" rel="external">http.Server</a>: 一个能够处理HTTP请求的Server实例，通过http.createServer返回。继承了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/net.html#net_class_net_server" target="_blank" rel="external">net.Server</a>，新增了一些API和事件。</li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_serverresponse" target="_blank" rel="external">http.ServerResponse</a>: Node server创建的并处理请求的‘响应对象’。继承自<a href="https://nodejs.org/dist/latest-v7.x/docs/api/events.html#events_class_eventemitter" target="_blank" rel="external">EventEmitter</a>，实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_writable" target="_blank" rel="external">Writable Stream</a>。</li>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_incomingmessage" target="_blank" rel="external">http.IncomingMessage</a>: <code>Readable Stream</code></li>
+</ul>
+<h2 id="Class-http-Agent"><a href="#Class-http-Agent" class="headerlink" title="Class: http.Agent"></a>Class: <a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_agent" target="_blank" rel="external">http.Agent</a></h2><blockquote>
+<p>The HTTP Agent is used for pooling sockets used in HTTP client requests.</p>
+</blockquote>
+<h3 id="agent-createConnection-options-callback"><a href="#agent-createConnection-options-callback" class="headerlink" title="agent.createConnection(options[, callback])"></a>agent.createConnection(options[, callback])</h3><ul>
+<li><code>options&lt;Object&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p>创建一个用于HTTP请求的socket或stream。该函数返回一个socket或stream。</p>
+<p><code>callback</code>的函数签名形式是：<code>(err, stream)</code> </p>
+<h3 id="agent-destroy"><a href="#agent-destroy" class="headerlink" title="agent.destroy()"></a>agent.destroy()</h3><p>销毁该agent的所有socket连接</p>
+<h3 id="agent-getName"><a href="#agent-getName" class="headerlink" title="agent.getName()"></a>agent.getName()</h3><blockquote>
+<p>Get a unique name for a set of request options, to determine whether a connection can be reused. In the http agent, this returns host:port:localAddress. In the https agent, the name includes the CA, cert, ciphers, and other HTTPS/TLS-specific options that determine socket reusability.</p>
+</blockquote>
+<h3 id="agent-maxFreeSockets"><a href="#agent-maxFreeSockets" class="headerlink" title="agent.maxFreeSockets"></a>agent.maxFreeSockets</h3><p>设置agent处于free状态时的最大socket数量。(默认值是256)</p>
+<h3 id="agent-maxSockets"><a href="#agent-maxSockets" class="headerlink" title="agent.maxSockets"></a>agent.maxSockets</h3><p>设置该agent与同一个<code>origin(host:port)</code>能够同时连接的最大的socket数量。（默认Infinity）</p>
+<h3 id="agent-requests"><a href="#agent-requests" class="headerlink" title="agent.requests"></a>agent.requests</h3><blockquote>
+<p>An object which contains queues of requests that have not yet been assigned to sockets. Do not modify.</p>
+</blockquote>
+<h3 id="agent-sockets"><a href="#agent-sockets" class="headerlink" title="agent.sockets"></a>agent.sockets</h3><blockquote>
+<p>An object which contains arrays of sockets currently in use by the Agent. Do not modify.</p>
+</blockquote>
+<h2 id="Class-http-ClientRequest"><a href="#Class-http-ClientRequest" class="headerlink" title="Class: http.ClientRequest"></a>Class: <a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_class_http_clientrequest" target="_blank" rel="external">http.ClientRequest</a></h2><p><code>ClientRequest</code>对象是Node.js内部创建并由<a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_http_request_options_callback" target="_blank" rel="external">http.request()</a>方法返回。用于表示一个头部(header)已经进入”队列”并处于进行中(in-progress)的HTTP请求。</p>
+<h3 id="Event-‘abort’"><a href="#Event-‘abort’" class="headerlink" title="Event: ‘abort’"></a>Event: ‘abort’</h3><p>当一个请求被客户端中止时触发。</p>
+<blockquote>
+<p>This event is only emitted on the first call to abort().</p>
+</blockquote>
+<h3 id="Event-‘aborted’"><a href="#Event-‘aborted’" class="headerlink" title="Event: ‘aborted’"></a>Event: ‘aborted’</h3><p>当请求被server中止且socket关闭时触发。</p>
+<h3 id="Event-‘connect’"><a href="#Event-‘connect’" class="headerlink" title="Event: ‘connect’"></a>Event: ‘connect’</h3><p>当server端通过<code>CONNECT</code>方法响应一个请求时触发。</p>
+<p>下面的例子来自<a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_connect" target="_blank" rel="external">官方文档</a></p>
+<pre><code class="javascript">/* eslint no-console: 0*/
+const http = require(&#39;http&#39;);
+const net = require(&#39;net&#39;);
+const url = require(&#39;url&#39;);
+
+const proxy = http.createServer((req, res) =&gt; {
+  res.writeHead(200, { &#39;Content-Type&#39;: &#39;text/plain&#39; });
+  res.end(&#39;okay&#39;);
+});
+
+proxy.on(&#39;connect&#39;, (req, cltSocket, head) =&gt; {
+  const srvUrl = url.parse(`http://${req.url}`);
+  const srvSocket = net.connect(srvUrl.port, srvUrl.hostname, () =&gt; {
+    cltSocket.write(&#39;HTTP/1.1 200 Connection Established\r\n&#39; +
+                    &#39;Proxy-agent: Node.js-Proxy\r\n&#39; +
+                    &#39;\r\n&#39;);
+  });
+  srvSocket.write(head);
+  srvSocket.pipe(cltSocket);
+  cltSocket.pipe(srvSocket);
+});
+
+proxy.listen(1337, &#39;127.0.0.1&#39;, () =&gt; {
+  const options = {
+    port: 1337,
+    hostname: &#39;127.0.0.1&#39;,
+    method: &#39;CONNECT&#39;,
+    path: &#39;www.google.com:80&#39;,
+  };
+
+  // 返回一个ClientRequest对象
+  const req = http.request(options);
+  req.end();
+  req.on(&#39;connect&#39;, (res, socket) =&gt; {
+    console.log(&#39;got connected!&#39;);
+
+    // \r\n表示换行，具体可参考[回车和换行](http://www.ruanyifeng.com/blog/2006/04/post_213.html)
+    socket.write(&#39;GET / HTTP/1.1\r\n&#39; +
+                 &#39;HOST: www.google.com:80\r\n&#39; +
+                 &#39;Connection: close\r\n&#39; +
+                 &#39;\r\n&#39;);
+
+    socket.on(&#39;data&#39;, (chunk) =&gt; {
+      console.log(&#39;###socket on data###&#39;, chunk.toString());
+    });
+    socket.on(&#39;end&#39;, () =&gt; {
+      proxy.close();
+    });
+  });
+});
+</code></pre>
+<h3 id="Event-‘continue’"><a href="#Event-‘continue’" class="headerlink" title="Event: ‘continue’"></a>Event: ‘continue’</h3><p>当server响应<code>100 CONTINUE</code>时触发</p>
+<h3 id="Event-‘response’"><a href="#Event-‘response’" class="headerlink" title="Event: ‘response’"></a>Event: ‘response’</h3><p>当请求接受到响应时触发，该事件仅会触发一次。</p>
+<h3 id="Event-‘socket’"><a href="#Event-‘socket’" class="headerlink" title="Event: ‘socket’"></a>Event: ‘socket’</h3><p>当一个socket关联到该请求时触发</p>
+<h3 id="Event-‘upgrade’"><a href="#Event-‘upgrade’" class="headerlink" title="Event: ‘upgrade’"></a>Event: ‘upgrade’</h3><p>当接收到server端的Upgrade响应头时触发。</p>
+<p><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_upgrade" target="_blank" rel="external">官方示例</a></p>
+<pre><code class="javascript">/* eslint no-console: 0 */
+const http = require(&#39;http&#39;);
+
+const server = http.createServer((req, res) =&gt; {
+  res.writeHead(&#39;200&#39;, { &#39;Content-Type&#39;: &#39;text/plain&#39; });
+  res.end(&#39;okay&#39;);
+});
+
+server.on(&#39;upgrade&#39;, (req, socket) =&gt; {
+  socket.write(&#39;HTTP/1.1 101 Web Socket Protocol Handshake\r\n&#39; +
+               &#39;Upgrade: WebSocket\r\n&#39; +
+               &#39;Connection: Upgrade\r\n&#39; +
+               &#39;\r\n&#39;);
+  socket.pipe(socket);
+});
+
+server.listen(1337, &#39;127.0.0.1&#39;, () =&gt; {
+  const options = {
+    port: 1337,
+    hostname: &#39;127.0.0.1&#39;,
+    headers: {
+      Connection: &#39;Upgrade&#39;,
+      Upgrade: &#39;websocket&#39;,
+    },
+  };
+
+  const req = http.request(options);
+  req.end();
+  req.on(&#39;upgrade&#39;, (res, socket) =&gt; {
+    console.log(&#39;got upgrade!&#39;);
+    socket.end();
+    process.exit(0);
+  });
+});
+</code></pre>
+<h3 id="request-abort"><a href="#request-abort" class="headerlink" title="request.abort()"></a>request.abort()</h3><blockquote>
+<p>Marks the request as aborting. Calling this will cause remaining data in the response to be dropped and the socket to be destroyed.</p>
+</blockquote>
+<h3 id="request-end-data-encoding-callback"><a href="#request-end-data-encoding-callback" class="headerlink" title="request.end([data][, encoding][, callback])"></a>request.end([data][, encoding][, callback])</h3><ul>
+<li><code>data&lt;String|Buffer&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<blockquote>
+<p>Finishes sending the request. If any parts of the body are unsent, it will flush them to the stream. If the request is chunked, this will send the terminating ‘0\r\n\r\n’.</p>
+</blockquote>
+<p>如果有<code>data</code>参数，则等同于在<code>request.write(data, encoding)</code>之后调用<code>request.end(callback)</code></p>
+<p>callack在请求的stream结束以后调用。</p>
+<h3 id="request-flushHeaders"><a href="#request-flushHeaders" class="headerlink" title="request.flushHeaders()"></a>request.flushHeaders()</h3><p>flush(直接发送)缓存的headers，从而绕过对于headers优化。</p>
+<blockquote>
+<p>For efficiency reasons, Node.js normally buffers the request headers until you call request.end() or write the first chunk of request data. It then tries hard to pack the request headers and data into a single TCP packet.</p>
+</blockquote>
+<h3 id="request-setTimeout-timeout-callback"><a href="#request-setTimeout-timeout-callback" class="headerlink" title="request.setTimeout(timeout[, callback])"></a>request.setTimeout(timeout[, callback])</h3><ul>
+<li><code>timeout&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code>，当超时发生时触发</li>
+</ul>
+<p>设置请求的超时时间</p>
+<h3 id="request-write-chunk-encoding-callback"><a href="#request-write-chunk-encoding-callback" class="headerlink" title="request.write(chunk[, encoding][, callback])"></a>request.write(chunk[, encoding][, callback])</h3><ul>
+<li><code>chunk&lt;Buffer|String&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<h2 id="Class-http-Server"><a href="#Class-http-Server" class="headerlink" title="Class: http.Server"></a>Class: http.Server</h2><blockquote>
+<p>This class inherits from <a href="https://nodejs.org/dist/latest-v7.x/docs/api/net.html#net_class_net_server" target="_blank" rel="external">net.Server</a>.</p>
+</blockquote>
+<h3 id="Event-‘checkContinue’"><a href="#Event-‘checkContinue’" class="headerlink" title="Event: ‘checkContinue’"></a>Event: ‘checkContinue’</h3><ul>
+<li><code>request&lt;IncomingMessage&gt;</code></li>
+<li><code>response&lt;http.ServerResponse&gt;</code></li>
+</ul>
+<p>当HTTP请求的header中有<code>Expect: 100-continue</code>时触发。</p>
+<blockquote>
+<p>Note that when this event is emitted and handled, the ‘request’ event will not be emitted.</p>
+</blockquote>
+<p>下面是一个示例</p>
+<pre><code class="javascript">/* eslint no-console: 0 */
+const http = require(&#39;http&#39;);
+
+const server = http.createServer((req, res) =&gt; {
+  res.writeHead(200, { &#39;Content-Type&#39;: &#39;text/plain&#39; });
+  res.end(&#39;okay&#39;);
+});
+
+server.on(&#39;checkContinue&#39;, (req, res) =&gt; {
+  console.log(&#39;checkContinue got!&#39;);
+  res.writeContinue();
+});
+
+server.listen(1337, () =&gt; {
+  const options = {
+    port: 1337,
+    hostname: &#39;127.0.0.1&#39;,
+    headers: {
+      Expect: &#39;100-continue&#39;,
+    },
+  };
+  const req = http.request(options);
+  req.end();
+});
+</code></pre>
+<h3 id="Event-‘checkExpectation’"><a href="#Event-‘checkExpectation’" class="headerlink" title="Event: ‘checkExpectation’"></a>Event: ‘checkExpectation’</h3><ul>
+<li><code>request&lt;http.ClientRequest&gt;</code></li>
+<li><code>response&lt;http.ServerResponse&gt;</code></li>
+</ul>
+<p>当HTTP请求头中有<code>Expect</code>字段，且value中没有<code>100-continue</code>时触发。</p>
+<blockquote>
+<p>Note that when this event is emitted and handled, the ‘request’ event will not be emitted.</p>
+</blockquote>
+<h3 id="Event-‘clientError’"><a href="#Event-‘clientError’" class="headerlink" title="Event: ‘clientError’"></a>Event: ‘clientError’</h3><ul>
+<li><code>exception&lt;Error&gt;</code></li>
+<li><code>socket&lt;net.Socket&gt;</code></li>
+</ul>
+<p>正常来讲，一个HTTP请求因为客户端的错误而中断，Server端应该关闭Socket相应的<code>Socket</code>。为了更加优雅地处理这种场景，我们可以在关闭链接的同时以<code>400 Bad Request</code>响应客户端，从而避免唐突地关闭链接。</p>
+<h3 id="Event-‘close’"><a href="#Event-‘close’" class="headerlink" title="Event: ‘close’"></a>Event: ‘close’</h3><p>当server close的时候触发</p>
+<h3 id="Event-‘connect’-1"><a href="#Event-‘connect’-1" class="headerlink" title="Event: ‘connect’"></a>Event: ‘connect’</h3><ul>
+<li><code>request&lt;http.IncomingMessage&gt;</code></li>
+<li><code>socket&lt;net.Socket&gt;</code></li>
+<li><code>head&lt;Buffer&gt;</code>, The first packet of the tunneling stream (may be empty)</li>
+</ul>
+<p>当Server端接收到的HTTP请求中<code>method</code>是<code>connect</code>时触发。</p>
+<blockquote>
+<p>After this event is emitted, the request’s socket will not have a ‘data’ event listener, meaning you will need to bind to it in order to handle data sent to the server on that socket.</p>
+</blockquote>
+<h3 id="Event-‘connection’"><a href="#Event-‘connection’" class="headerlink" title="Event: ‘connection’"></a>Event: ‘connection’</h3><ul>
+<li><code>socket&lt;net.Socket&gt;</code><br>当一个新的TCP Steam创建时触发。</li>
+</ul>
+<h3 id="Event-‘request’"><a href="#Event-‘request’" class="headerlink" title="Event: ‘request’"></a>Event: ‘request’</h3><ul>
+<li><code>request&lt;http.IncomingMessage&gt;</code></li>
+<li><code>response&lt;http.ServerResponse&gt;</code></li>
+</ul>
+<blockquote>
+<p>Emitted each time there is a request. Note that there may be multiple requests per connection (in the case of keep-alive connections).</p>
+</blockquote>
+<h3 id="server-close-callback"><a href="#server-close-callback" class="headerlink" title="server.close([callback])"></a>server.close([callback])</h3><ul>
+<li><code>callback&lt;Function&gt;</code><br>调用后server将不再处理新的HTTP请求，将继续处理已经接收的请求。</li>
+</ul>
+<h3 id="server-listening"><a href="#server-listening" class="headerlink" title="server.listening"></a>server.listening</h3><ul>
+<li><code>&lt;Boolean&gt;</code></li>
+</ul>
+<p>返回一个bool值表示当前server是否在监听请求</p>
+<h3 id="server-maxHeadersCount"><a href="#server-maxHeadersCount" class="headerlink" title="server.maxHeadersCount"></a>server.maxHeadersCount</h3><ul>
+<li><code>&lt;Number&gt;</code><br>设置处理请求的headers的最大数量限制，默认1000。</li>
+</ul>
+<h3 id="server-setTimeout-msecs-callback"><a href="#server-setTimeout-msecs-callback" class="headerlink" title="server.setTimeout(msecs, callback)"></a>server.setTimeout(msecs, callback)</h3><ul>
+<li><code>msecs&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p>为server的<code>sockets</code>设置超时时间，当<code>socket</code>超时以后会调用<code>callback</code></p>
+<h3 id="server-timeout"><a href="#server-timeout" class="headerlink" title="server.timeout"></a>server.timeout</h3><ul>
+<li><code>&lt;Nubmer&gt; Default = 120000(2 minutes)</code></li>
+</ul>
+<p>为后续的连接(connection)设置超时时间</p>
+<blockquote>
+<p>Set to 0 to disable any kind of automatic timeout behavior on incoming connections.</p>
+</blockquote>
+<h2 id="http-ServerResponse"><a href="#http-ServerResponse" class="headerlink" title="http.ServerResponse"></a>http.ServerResponse</h2><p>response是HTTP Server内部创建的对象，<a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_request" target="_blank" rel="external">request</a>事件的第二个参数。<br>response对象实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_writable" target="_blank" rel="external">Writable Stream</a>接口，继承了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/events.html#events_class_eventemitter" target="_blank" rel="external">EventEmitter</a>对象。</p>
+<h3 id="Event-‘close’-1"><a href="#Event-‘close’-1" class="headerlink" title="Event: ‘close’"></a>Event: ‘close’</h3><blockquote>
+<p>Indicates that the underlying connection was terminated before response.end() was called or able to flush.</p>
+</blockquote>
+<h3 id="Event-‘finish’"><a href="#Event-‘finish’" class="headerlink" title="Event: ‘finish’"></a>Event: ‘finish’</h3><p>当请求结束的时候触发此事件。</p>
+<blockquote>
+<p>After this event, no more events will be emitted on the response object.</p>
+</blockquote>
+<h3 id="response-addTrailers-headers"><a href="#response-addTrailers-headers" class="headerlink" title="response.addTrailers(headers)"></a>response.addTrailers(headers)</h3><ul>
+<li><code>headers&lt;Object&gt;</code></li>
+</ul>
+<blockquote>
+<p>This method adds HTTP trailing headers (a header but at the end of the message) to the response.</p>
+</blockquote>
+<h3 id="response-end-data-encoding-callback"><a href="#response-end-data-encoding-callback" class="headerlink" title="response.end([data][, encoding][, callback])"></a>response.end([data][, encoding][, callback])</h3><ul>
+<li><code>data&lt;Buffer|String&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p><code>response.end()</code>方法的调用表示该请求的结束。<strong>每一个响应都必须调用<code>response.end()</code>来结束该response。</strong></p>
+<blockquote>
+<p>This method signals to the server that all of the response headers and body have been sent; that server should consider this message complete. The method, response.end(), MUST be called on each response.</p>
+</blockquote>
+<h3 id="response-finished"><a href="#response-finished" class="headerlink" title="response.finished"></a>response.finished</h3><ul>
+<li><code>&lt;Boolean&gt;</code></li>
+</ul>
+<p>标识请求是否已经完成</p>
+<h3 id="response-getHeader-name"><a href="#response-getHeader-name" class="headerlink" title="response.getHeader(name)"></a>response.getHeader(name)</h3><ul>
+<li><code>name&lt;String&gt;</code></li>
+</ul>
+<p>返回指定的请求头，name参数不区分大小写</p>
+<h3 id="response-headerSent"><a href="#response-headerSent" class="headerlink" title="response.headerSent"></a>response.headerSent</h3><ul>
+<li><code>&lt;Boolean&gt;</code></li>
+</ul>
+<p>标识请求头是否已经发送</p>
+<h3 id="response-removeHeader-name"><a href="#response-removeHeader-name" class="headerlink" title="response.removeHeader(name)"></a>response.removeHeader(name)</h3><ul>
+<li><code>name&lt;String&gt;</code></li>
+</ul>
+<blockquote>
+<p>Removes a header that’s queued for implicit sending.</p>
+</blockquote>
+<h3 id="response-setHeader-name-value"><a href="#response-setHeader-name-value" class="headerlink" title="response.setHeader(name, value)"></a>response.setHeader(name, value)</h3><ul>
+<li><code>name&lt;String&gt;</code></li>
+<li><code>value&lt;String&gt;</code></li>
+</ul>
+<p>设置单个相应头信息，优先级比<code>response.writeHead()</code>低。</p>
+<pre><code class="javascript">// example
+response.setHeader(&#39;Content-Type&#39;, &#39;text/html&#39;);
+</code></pre>
+<p>or</p>
+<pre><code class="javascript">response.setHeader(&#39;Set-Cookie&#39;, [&#39;type=ninja&#39;, &#39;language=javascript&#39;]);
+</code></pre>
+<h3 id="response-setTimeout-msecs-callback"><a href="#response-setTimeout-msecs-callback" class="headerlink" title="response.setTimeout(msecs, callback)"></a>response.setTimeout(msecs, callback)</h3><ul>
+<li><code>msecs&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<p>设置Socket的超时时间。</p>
+<blockquote>
+<p>If no ‘timeout’ listener is added to the request, the response, or the server, then sockets are destroyed when they time out. If you assign a handler on the request, the response, or the server’s ‘timeout’ events, then it is your responsibility to handle timed out sockets.</p>
+</blockquote>
+<h3 id="response-statusCode"><a href="#response-statusCode" class="headerlink" title="response.statusCode"></a>response.statusCode</h3><ul>
+<li><code>&lt;Number&gt;</code></li>
+</ul>
+<p>为响应设置状态码</p>
+<pre><code class="javascript">// example
+response.statusCode = 404;
+</code></pre>
+<h3 id="response-statusMessage"><a href="#response-statusMessage" class="headerlink" title="response.statusMessage"></a>response.statusMessage</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<p>为响应设置状态消息</p>
+<pre><code class="javascript">// example
+response.statusMessage = &#39;Not Found&#39;
+</code></pre>
+<h3 id="resonse-write-chunk-encoding-callback"><a href="#resonse-write-chunk-encoding-callback" class="headerlink" title="resonse.write(chunk[, encoding][, callback]);"></a>resonse.write(chunk[, encoding][, callback]);</h3><ul>
+<li><code>chunk&lt;Buffer|String&gt;</code></li>
+<li><code>encoding&lt;String&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+<li><code>Returns: &lt;Boolean&gt;</code></li>
+</ul>
+<blockquote>
+<p>If this method is called and <code>response.writeHead()</code> has not been called, it will switch to implicit header mode and flush the implicit headers.</p>
+<p>The first time <code>response.write()</code> is called, it will send the buffered header information and the first body to the client. The second time response.write() is called, Node.js assumes you’re going to be streaming data, and sends that separately. That is, the response is buffered up to the first chunk of body.</p>
+<p>Returns true if the entire data was flushed successfully to the kernel buffer. Returns false if all or part of the data was queued in user memory. ‘drain’ will be emitted when the buffer is free again.</p>
+</blockquote>
+<h3 id="response-writeHead-statusCode-statusMessage-headers"><a href="#response-writeHead-statusCode-statusMessage-headers" class="headerlink" title="response.writeHead(statusCode[, statusMessage][, headers])"></a>response.writeHead(statusCode[, statusMessage][, headers])</h3><ul>
+<li><code>statusCode&lt;Number&gt;</code></li>
+<li><code>statusMessage&lt;String&gt;</code></li>
+<li><code>headers&lt;Object&gt;</code></li>
+</ul>
+<p>response.writeHead会显式地在响应中设置头信息，在同一个response中writeHead方法只能调用一次, 且优先级高于<code>response.setHeader()</code>方法。<code>response.writeHead()</code>必须在<code>response.end()</code>方法之前调用。</p>
+<blockquote>
+<p>This method must only be called once on a message and it must be called before response.end() is called.</p>
+</blockquote>
+<h2 id="Class-http-IncomingMessage"><a href="#Class-http-IncomingMessage" class="headerlink" title="Class: http.IncomingMessage"></a>Class: http.IncomingMessage</h2><p><code>IncomingMessage</code>由http.Server或者http.ClientRequest创建，并且分别作为<code>request(http.Server)</code>和<code>response(http.clientRequest)</code>事件的第一个参数。实现了<a href="https://nodejs.org/dist/latest-v7.x/docs/api/stream.html#stream_class_stream_readable" target="_blank" rel="external">Readable Stream</a>接口。</p>
+<h3 id="Event-‘aborted’-1"><a href="#Event-‘aborted’-1" class="headerlink" title="Event: ‘aborted’"></a>Event: ‘aborted’</h3><blockquote>
+<p>Emitted when the request has been aborted by the client and the network socket has closed.</p>
+</blockquote>
+<h3 id="Event-‘close’-2"><a href="#Event-‘close’-2" class="headerlink" title="Event: ‘close’"></a>Event: ‘close’</h3><blockquote>
+<p>Indicates that the underlying connection was closed. Just like ‘end’, this event occurs only once per response.</p>
+</blockquote>
+<h3 id="message-destroy-error"><a href="#message-destroy-error" class="headerlink" title="message.destroy([error])"></a>message.destroy([error])</h3><ul>
+<li><code>error&lt;Error&gt;</code></li>
+</ul>
+<p>在接收此message的socket上调用destroy方法。</p>
+<h3 id="message-headers"><a href="#message-headers" class="headerlink" title="message.headers"></a>message.headers</h3><ul>
+<li><code>&lt;Object&gt;</code></li>
+</ul>
+<p>请求头对象(key都是小写)。</p>
+<h3 id="message-httpVersion"><a href="#message-httpVersion" class="headerlink" title="message.httpVersion"></a>message.httpVersion</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<p>http版本</p>
+<h3 id="message-method"><a href="#message-method" class="headerlink" title="message.method"></a>message.method</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<blockquote>
+<p>Only valid for request obtained from <code>http.Server</code>.</p>
+</blockquote>
+<h3 id="message-rawHeaders"><a href="#message-rawHeaders" class="headerlink" title="message.rawHeaders"></a>message.rawHeaders</h3><ul>
+<li><code>&lt;Array&gt;</code></li>
+</ul>
+<p>rawHeaders把header的key和value放在同一个数组中。奇数位是key，偶数位是value。形式如下：</p>
+<pre><code class="javascript">[ &#39;user-agent&#39;,
+   &#39;this is invalid because there can be only one&#39;,
+   &#39;User-Agent&#39;,
+   &#39;curl/7.22.0&#39;,
+   &#39;Host&#39;,
+   &#39;127.0.0.1:8000&#39;,
+   &#39;ACCEPT&#39;,
+   &#39;*/*&#39; ]
+</code></pre>
+<blockquote>
+<p>Note that the keys and values are in the same list. It is not a list of tuples. So, the even-numbered offsets are key values, and the odd-numbered offsets are the associated values.</p>
+<pre><code class="javascript">
+</code></pre>
+</blockquote>
+<h3 id="message-rawTrailers-amp-message-trailers"><a href="#message-rawTrailers-amp-message-trailers" class="headerlink" title="message.rawTrailers &amp; message.trailers"></a>message.rawTrailers &amp; message.trailers</h3><ul>
+<li><code>&lt;Array&gt;</code></li>
+</ul>
+<blockquote>
+<p><code>rawTrailers</code> The raw request/response trailer keys and values exactly as they were received. Only populated at the ‘end’ event.</p>
+<p><code>trailers</code> The request/response trailers object. Only populated at the ‘end’ event.</p>
+</blockquote>
+<h3 id="message-setTimeout-msecs-callback"><a href="#message-setTimeout-msecs-callback" class="headerlink" title="message.setTimeout(msecs, callback)"></a>message.setTimeout(msecs, callback)</h3><ul>
+<li><code>msecs&lt;Number&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+</ul>
+<blockquote>
+<p>调用<code>message.connection.setTimeout(msecs, callback)</code>.</p>
+</blockquote>
+<h3 id="message-statusCode-amp-message-statusMessage"><a href="#message-statusCode-amp-message-statusMessage" class="headerlink" title="message.statusCode &amp; message.statusMessage"></a>message.statusCode &amp; message.statusMessage</h3><p>只有http.clientRequest的response事件处理程序中才有。</p>
+<h3 id="message-socket"><a href="#message-socket" class="headerlink" title="message.socket"></a>message.socket</h3><p>返回该连接中的socket</p>
+<h3 id="message-url"><a href="#message-url" class="headerlink" title="message.url"></a>message.url</h3><ul>
+<li><code>&lt;String&gt;</code></li>
+</ul>
+<blockquote>
+<p>Only valid for request obtained from http.Server.</p>
+</blockquote>
+<h2 id="http-createServer-requestListener"><a href="#http-createServer-requestListener" class="headerlink" title="http.createServer([requestListener])"></a>http.createServer([requestListener])</h2><ul>
+<li>Returns <code>&lt;http.Server&gt;</code><br>返回一个新的http.Server的实例</li>
+</ul>
+<p>requestListener会自动添加到返回的<code>http.Server</code>的request事件上。</p>
+<blockquote>
+<p>The requestListener is a function which is automatically added to the <a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html#http_event_request" target="_blank" rel="external">request</a> event.</p>
+</blockquote>
+<h2 id="http-get-options-callback"><a href="#http-get-options-callback" class="headerlink" title="http.get(options[, callback])"></a>http.get(options[, callback])</h2><ul>
+<li><code>options&lt;Object&gt;</code></li>
+<li><code>callback&lt;Function&gt;</code></li>
+<li>Returns <code>&lt;http.ClientRequest&gt;</code></li>
+</ul>
+<p>通常情况下get请求没有请求体，相比于<code>http.request</code>，<code>http.get</code>方法提供了一个比较便利的API，它们最主要的区别在于<code>http.get</code>将请求的method设置为了get，且自动调用了req.end()方法。</p>
+<blockquote>
+<p>Since most requests are GET requests without bodies, Node.js provides this convenience method. The only difference between this method and http.request() is that it sets the method to GET and calls req.end() automatically. Note that response data must be consumed in the callback for reasons stated in http.ClientRequest section.</p>
+</blockquote>
+<h2 id="http-globalAgent"><a href="#http-globalAgent" class="headerlink" title="http.globalAgent"></a>http.globalAgent</h2><ul>
+<li><code>&lt;http.Agent&gt;</code></li>
+</ul>
+<blockquote>
+<p>Global instance of Agent which is used as the default for all HTTP client requests.</p>
+</blockquote>
+<h2 id="http-request-options-callback"><a href="#http-request-options-callback" class="headerlink" title="http.request(options[, callback])"></a>http.request(options[, callback])</h2><ul>
+<li><code>options&lt;Object&gt;</code><ul>
+<li><code>protocal&lt;String&gt;</code> 默认’http’</li>
+<li><code>host&lt;String&gt;</code> 请求的域名或者IP，默认’localhost’</li>
+<li><code>hostname&lt;String&gt;</code> <code>host</code>的别称，优先级高于<code>host</code></li>
+<li><code>family&lt;Number&gt;</code> ip地址族，有效值是4或者6，默认情况是IPV4和IPV6都会使用。</li>
+<li><code>port&lt;Number&gt;</code> 请求的远程服务的端口，默认值：80</li>
+<li><code>localAddress&lt;String&gt;</code> Local interface to bind for network connections</li>
+<li><code>socketPath&lt;String&gt;</code> Unix的socket路径：<code>host:port</code></li>
+<li><code>method&lt;String&gt;</code> 请求的HTTP方法，默认使用’GET’</li>
+<li><code>path&lt;String&gt;</code> 请求路径，默认<code>/</code></li>
+<li><code>headers&lt;Object&gt;</code> 请求头</li>
+<li><code>auth&lt;String&gt;</code> Basic authentication</li>
+<li><code>agent&lt;http.Agent&gt;|&lt;Boolean&gt;</code> 控制Agent的行为</li>
+<li><code>createConnection&lt;Function&gt;</code> 当agent未设置时，此方法用于创建用于请求的<code>socket/stream</code></li>
+<li><code>timeout&lt;Number&gt;</code> 设置请求超时时间</li>
+</ul>
+</li>
+<li><code>callback&lt;Function&gt;</code> </li>
+</ul>
+<blockquote>
+<p>The optional <code>callback</code> parameter will be added as a one time listener for the ‘response’ event.</p>
+<p><code>http.request()</code> returns an instance of the http.ClientRequest class. The ClientRequest instance is a writable stream. If one needs to upload a file with a POST request, then write to the ClientRequest object.</p>
+</blockquote>
+<h1 id="References"><a href="#References" class="headerlink" title="References"></a>References</h1><ul>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html" target="_blank" rel="external">Node.js - HTTP</a></li>
+<li><a href="https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/" target="_blank" rel="external">Anatomy of an Http Transaction</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[Node.js - process]]></title>
+      <url>http://blog.dzyhenry.com/2016/12/08/process/</url>
+      <content type="html"><![CDATA[<h2 id="Process"><a href="#Process" class="headerlink" title="Process"></a>Process</h2><p>The process object is a global that provides information about, and control over, the current Node.js process. As a global, it is always available to Node.js applications without using require().</p>
+<a id="more"></a>
+<h2 id="Events"><a href="#Events" class="headerlink" title="Events"></a>Events</h2><h3 id="Event-‘beforeExit’"><a href="#Event-‘beforeExit’" class="headerlink" title="Event: ‘beforeExit’"></a>Event: ‘beforeExit’</h3><ul>
+<li><code>beforeExit</code>事件会在Node的event loop队列为空的时候触发，此时Node的<code>event loop</code>并未终止，也就意味着事件处理程序可以进行异步操作。</li>
+<li>如果process显示终止（譬如：<code>process.exit()</code>, <code>uncaught exception</code>），<code>beforeExit</code>事件不会触发。</li>
+</ul>
+<h3 id="Event-‘exit’"><a href="#Event-‘exit’" class="headerlink" title="Event: ‘exit’"></a>Event: ‘exit’</h3><ul>
+<li><code>process.exit()</code> 调用时触发;</li>
+<li><code>exit</code>事件在<code>event loop</code>队列为空时候触发</li>
+<li>事件监听程序只能处理同步代码。</li>
+</ul>
+<p>下面这段代码可以清晰地反应这两个事件的区别</p>
+<pre><code class="javascript">// 不会输出&#39;exit setTimeout&#39;
+process.on(&#39;exit&#39;, (code) =&gt; {
+  console.log(`About to exit, the exit code is ${code}`);
+  setTimeout(() =&gt; {
+    console.log(&#39;exit setTimeout&#39;);
+  }, 1000);
+});
+
+// 会每隔一秒地输出‘beforeExit setTimeout’
+process.on(&#39;beforeExit&#39;, (code) =&gt; {
+  console.log(`About to exit, the exit code is ${code}`);
+  setTimeout(() =&gt; {
+    console.log(&#39;beforeExit setTimeout&#39;);
+  }, 1000);
+});
+</code></pre>
+<p>所以，<code>exit</code>事件触发后，进程的<code>event loop</code>不会再接受新的代码执行，而<code>beforeExit</code>事件触发以后，event loop能够继续正常的工作。</p>
+<h3 id="Event-‘uncaughtException’"><a href="#Event-‘uncaughtException’" class="headerlink" title="Event: ‘uncaughtException’"></a>Event: ‘uncaughtException’</h3><p>当JavaScript代码执行过程中出现未捕获的异常，并传递到<code>event loop</code>中时，<code>uncaughtException</code>事件就会触发。</p>
+<p>通常来讲，<code>uncaughtException</code>事件触发以后，其事件监听程序应当是程序在真正退出之前执行的最后一段代码，所以<code>uncaughtException</code>事件监听程序的应当用来做释放资源之类的工作。但是，结合前面的两个事件<code>beforeExit</code>，<code>exit</code>，我们会发现一个有趣的现象。</p>
+<pre><code class="javascript">process.on(&#39;beforeExit&#39;, () =&gt; {
+  console.log(&#39;before exit&#39;);
+  setTimeout(() =&gt; {
+    console.log(bk);
+  }, 1000);
+});
+
+setTimeout(() =&gt; {
+  console.log(&#39;This will still run.&#39;);
+}, 500);
+
+// Intentionally cause an exception, but don&#39;t catch it.
+nonexistentFunc();
+console.log(&#39;This will not run.&#39;);
+</code></pre>
+<p>上面的代码中，<code>beforeExit</code>事件不会触发，原因很简单，当程序通过<code>process.exit()</code>或者遇到<code>uncaughtException</code>退出的时候，<code>beforeExit</code>并不会触发。但是，请看看下面的代码：</p>
+<pre><code class="javascript">process.on(&#39;uncaughtException&#39;, (err) =&gt; {
+  console.log(&#39;uncaughtException&#39;, err);
+});
+
+process.on(&#39;beforeExit&#39;, () =&gt; {
+  console.log(&#39;before exit&#39;);
+  setTimeout(() =&gt; {
+    console.log(bk);
+  }, 1000);
+});
+
+setTimeout(() =&gt; {
+  console.log(&#39;This will still run.&#39;);
+}, 500);
+
+// Intentionally cause an exception, but don&#39;t catch it.
+nonexistentFunc();
+console.log(&#39;This will not run.&#39;);
+</code></pre>
+<p>如果你把代码执行一下就会发现，当<code>uncaughtException</code>的事件监听程序被执行以后，后续<code>event loop</code>会继续工作。但正如<a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html#process_event_uncaughtexception" target="_blank" rel="external">文档</a>上所描述的，试图在异常未捕获的情况下，继续正常执行代码，正如在计算机升级的时候突然拔掉电源，总会有机会使得系统崩溃。所以，在实际应用场景中，我们应当确保<code>uncaughtException</code>的事件监听程序应当是当前process执行的最后一段代码。</p>
+<blockquote>
+<p>Attempting to resume normally after an uncaught exception can be similar to pulling out of the power cord when upgrading a computer – nine out of ten times nothing happens - but the 10th time, the system becomes corrupted. –<a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html#process_warning_using_uncaughtexception_correctly" target="_blank" rel="external">process</a></p>
+</blockquote>
+<h3 id="Signal-Events"><a href="#Signal-Events" class="headerlink" title="Signal Events"></a><a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html#process_signal_events" target="_blank" rel="external">Signal Events</a></h3><p>当Node.js进程接收到signal时会触发相应的Signal Events</p>
+<h4 id="SIGTERM-amp-SIGINT"><a href="#SIGTERM-amp-SIGINT" class="headerlink" title="SIGTERM &amp; SIGINT"></a>SIGTERM &amp; SIGINT</h4><p>在Node.js的进程中，可以设置<code>SIGTERM</code>和<code>SIGINT</code>的listener，同时会阻止默认行为。<br>关于<code>SIGINT</code>这个命令在非windows平台可以通过下面这段代码模拟。在终端里面启动Node.js进程以后，通过<code>$Control-C</code>会给进程发送<code>SIGTERM</code>信号，<code>$kill pid</code>会发送<code>SIGINT</code>信号。</p>
+<pre><code class="javascript">// Try press Control-C, which will send a SINGINT signal to the process.
+process.stdin.resume();
+
+// The diffrence between Control-C and Control-D
+// http://superuser.com/questions/169051/whats-the-difference-between-c-and-d-for-unix-mac-os-x-terminal
+process.on(&#39;SIGINT&#39;, () =&gt; {
+  console.log(&#39;Received SIGINT. Press Control-D to exit&#39;);
+});
+</code></pre>
+<blockquote>
+<p>SIGTERM and SIGINT have default handlers on non-Windows platforms that resets the terminal mode before exiting with code 128 + signal number. If one of these signals has a listener installed, its default behavior will be removed (Node.js will no longer exit).</p>
+</blockquote>
+<p>所以在Node.js的http server进程中，如果正在处理某个请求的server进程接收到<code>SIGINT</code>或<code>SIGTERM</code>信号时，我们可以考虑让server处理完这个请求，并且拒绝接下来的请求，然后以一种更优雅的方式关闭。这里有一个方案，来自<a href="http://joseoncode.com/2014/07/21/graceful-shutdown-in-node-dot-js/" target="_blank" rel="external">Graceful shutdown in Node.js</a>：</p>
+<pre><code class="javascript">var http = require(&#39;http&#39;);
+
+var server = http.createServer(function (req, res) {
+  setTimeout(function () { //simulate a long request
+    res.writeHead(200, {&#39;Content-Type&#39;: &#39;text/plain&#39;});
+    res.end(&#39;Hello World\n&#39;);
+  }, 4000);
+}).listen(9090, function (err) {
+  console.log(&#39;listening http://localhost:9090/&#39;);
+  console.log(&#39;pid is &#39; + process.pid);
+});
+
+// Graceful shut down: listen to SIGTERM, excute server.close(). Close the server after processing the last hanging request.
+process.on(&#39;SIGTERM&#39;, function () {
+  server.close(function () {
+    process.exit(0);
+  });
+});
+</code></pre>
+<h4 id="SIGKILL"><a href="#SIGKILL" class="headerlink" title="SIGKILL"></a>SIGKILL</h4><p>在所有平台上，Node.js进程在接收到<code>SIGKILL</code>信号时会无条件的结束进程。</p>
+<blockquote>
+<p>SIGKILL cannot have a listener installed, it will unconditionally terminate Node.js on all platforms.</p>
+</blockquote>
+<h2 id="porcess-abort"><a href="#porcess-abort" class="headerlink" title="porcess.abort"></a>porcess.abort</h2><p>进程立即退出，并生成<a href="https://en.wikipedia.org/wiki/Core_dump" target="_blank" rel="external">core file</a>。</p>
+<blockquote>
+<p>The process.abort() method causes the Node.js process to exit immediately and generate a core file.</p>
+</blockquote>
+<h2 id="process-arch-process-platform"><a href="#process-arch-process-platform" class="headerlink" title="process.arch, process.platform"></a>process.arch, process.platform</h2><ul>
+<li>process.arch: 返回运行Node.js进程的处理器架构，譬如<code>arm</code>, <code>ia32</code>, <code>x64</code></li>
+<li>process.platform: 返回运行Node.js进程的操作系统平台，譬如 <code>linux</code>, <code>windows</code>, <code>darwin</code>, <code>freebsd</code></li>
+</ul>
+<h2 id="process-env-process-argv-process-execArgv"><a href="#process-env-process-argv-process-execArgv" class="headerlink" title="process.env, process.argv, process.execArgv"></a>process.env, process.argv, process.execArgv</h2><ol>
+<li>添加的环境变量：process.env应该在node命令之前，譬如</li>
+</ol>
+<pre><code class="bash">NODE_ENV=production node worker.js
+</code></pre>
+<p>如果写成下面这样，process.env不会有NODE_ENV，参数会被加在process.argv当中。</p>
+<pre><code class="bash">node worker.js NODE_ENV=production
+process.argv returns: [&#39;node&#39;, &#39;worker.js&#39;, &#39;NODE_ENV=production&#39;]
+</code></pre>
+<ol>
+<li>process.execArgv: 返回Node.js进程启动的时候，Node.js的命令行选项。例如：</li>
+</ol>
+<pre><code class="bash">node --harmony script.js --version
+# process.execArgv returns [&#39;--harmony&#39;]
+</code></pre>
+<blockquote>
+<p>The process.execArgv property returns the set of Node.js-specific command-line options passed when the Node.js process was launched. </p>
+</blockquote>
+<ol>
+<li><strong>赋给<code>process.env</code>的值会隐式地转换为<code>String</code>类型。</strong></li>
+</ol>
+<h2 id="process-execPath-procee-cwd"><a href="#process-execPath-procee-cwd" class="headerlink" title="process.execPath, procee.cwd()"></a>process.execPath, procee.cwd()</h2><ol>
+<li><code>process.execPath</code>：返回启动Node.js进程的程序的绝对路径</li>
+<li><code>process.cwd()</code>：返回当前Node.js进程启动的绝对路径</li>
+</ol>
+<pre><code class="javascript">console.log(process.cwd());
+// returns &#39;/Users/henry/demos/node&#39;
+console.log(process.execPah);
+// returns &#39;/Users/henry/.nvm/versions/node/v7.0.0/bin/node&#39;
+</code></pre>
+<h2 id="process-exit-code-process-exitCode"><a href="#process-exit-code-process-exitCode" class="headerlink" title="process.exit([code]), process.exitCode"></a>process.exit([code]), process.exitCode</h2><ol>
+<li><code>process.exit()</code>会使进程强制退出，“挂起”的异步操作会被丢弃。</li>
+<li><code>process.exitCode</code>，为默认情况下的Node.js进程退出设置退出码。</li>
+</ol>
+<h2 id="process-hrtime"><a href="#process-hrtime" class="headerlink" title="process.hrtime()"></a>process.hrtime()</h2><p>返回<code>[second， nanoseconds]</code>的高精度时间元组，可以传入一个process.hrtime()返回值的参数，返回两个时间元组之间的时间差。process.hrtime()可以用来做高精度的性能评估。</p>
+<pre><code class="javascript">const time = process.hrtime();
+
+setTimeout(() =&gt; {
+  const diff = process.hrtime(time);
+
+  console.log(`Benchmark took ${(diff[0] * 1e9) + diff[1]} nanoseconds`);
+  // benchmark took 1000000527 nanoseconds
+}, 1000);
+</code></pre>
+<h2 id="process-kill-pid-signal"><a href="#process-kill-pid-signal" class="headerlink" title="process.kill(pid, [signal])"></a>process.kill(pid, [signal])</h2><p>给指定的<code>processid</code>发送一个信号，默认信号时<code>SIGTERM</code>。</p>
+<p><strong>注：</strong> 此API虽然叫做<code>kill</code>，但其功能仅仅是给指定的进程发送信号，且默认发送的信号是：<code>SINGTERM</code>。</p>
+<blockquote>
+<p>Note:Even though the name of this function is process.kill(), it is really just a signal sender, like the kill system call. The signal sent may do something other than kill the target process.</p>
+</blockquote>
+<h2 id="process-mainModule"><a href="#process-mainModule" class="headerlink" title="process.mainModule"></a>process.mainModule</h2><ul>
+<li>相比于<code>require.main</code>, <code>process.mainModule</code>提供了一种新的方法获取当前主模块。</li>
+<li>与<code>require.main</code>不同的是，<code>require.main</code>在代码执行阶段会改变，而process.main的值则一直是Node.js进程启动时的最初模块。</li>
+</ul>
+<h2 id="process-memoryUsage"><a href="#process-memoryUsage" class="headerlink" title="process.memoryUsage()"></a>process.memoryUsage()</h2><p>返回当前Node.js进程内存使用情况的object，内存单位是Byte。</p>
+<pre><code class="javascript">const util = require(&#39;util&#39;);
+console.log(util.inspect(process.memoryUsage()));
+// prints: { rss: 21262336, heapTotal: 10465280, heapUsed: 4396160 }
+</code></pre>
+<h2 id="process-nextTick"><a href="#process-nextTick" class="headerlink" title="process.nextTick()"></a>process.nextTick()</h2><p>在解释<code>process.nextTick()</code>之前， 有必要先了解一下Node.js中的<code>Event loop</code>是如何工作的，详情可参照<a href="https://github.com/nodejs/node/blob/master/doc/topics/event-loop-timers-and-nexttick.md" target="_blank" rel="external">官网解释</a>。</p>
+<p>下图是Node.js简化版的Event loop，来自<a href="https://github.com/nodejs/node/blob/master/doc/topics/event-loop-timers-and-nexttick.md#poll" target="_blank" rel="external">Node.js的官方文档</a>。</p>
+<pre><code>   ┌───────────────────────┐
+┌─&amp;gt;│        timers         │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+│  │     I/O callbacks     │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+│  │     idle, prepare     │
+│  └──────────┬────────────┘      ┌───────────────┐
+│  ┌──────────┴────────────┐      │   incoming:   │
+│  │         poll          │&amp;lt;─────┤  connections, │
+│  └──────────┬────────────┘      │   data, etc.  │
+│  ┌──────────┴────────────┐      └───────────────┘
+│  │        check          │
+│  └──────────┬────────────┘
+│  ┌──────────┴────────────┐
+└──┤    close callbacks    │
+   └───────────────────────┘
+</code></pre><blockquote>
+<p>Each phase has a FIFO queue of callbacks to execute. While each phase is special in its own way, generally, when the event loop enters a given phase, it will perform any operations specific to that phase, then execute callbacks in that phase’s queue until the queue has been exhausted or the maximum number of callbacks has executed. When the queue has been exhausted or the callback limit is reached, the event loop will move to the next phase, and so on.</p>
+</blockquote>
+<p>图中的每一个矩形代码Node.js的Event loop的每一个阶段(Phase)。值得一说的是，Node.js的Event loop模型和我们通常理解的浏览器的Event loop是有区别的，主要区别是Node.js对于不同的异步操作类型有不同的处理步骤和方式。具体如下：</p>
+<ul>
+<li><strong>timers</strong>: this phase excutes callbacks scheduled by <code>setTimeout()</code> and <code>setInterval()</code>.</li>
+<li><strong>I/O callbacks</strong>: excutes almost all callbacks with the exception of close callbacks, the ones scheduled by timers.</li>
+<li><strong>idle, prepare</strong>: only used internaly.</li>
+<li><strong>poll</strong>: retrieve new I/O events, node will block here when appropriate.</li>
+<li><strong>check</strong>: <code>setImmediate()</code> callbacks are invoked here.</li>
+<li><strong>close callbacks</strong>: e.g. <code>socket.on(&#39;close&#39;, ...)</code>.</li>
+</ul>
+<h3 id="setImmediate-vs-setTimeout"><a href="#setImmediate-vs-setTimeout" class="headerlink" title="setImmediate vs. setTimeout"></a>setImmediate vs. setTimeout</h3><p>下面的代码，如果处于Node.js进程执行的主模块中，<code>setTimeout</code>和<code>setImmediate</code>的执行顺序是不确定的。</p>
+<pre><code class="javascript">setTimeout(() =&gt; {
+    console.log(&#39;setTimeout&#39;);
+}, 0);
+
+setImmediate(() =&gt; {
+    console.log(&#39;setImmediate&#39;);
+});
+</code></pre>
+<p>由于<code>setTimeout</code>的callback执行是在timers阶段，<code>setImmediate</code>的执行在check阶段，所以<code>setTimeout</code>和<code>setImmediate</code>的执行顺序会依赖于当前process所处的Event loop阶段。</p>
+<blockquote>
+<p>setImmediate and setTimeout() are similar, but behave in different ways depending on when they are called.</p>
+<ul>
+<li>setImmediate() is designed to execute a script once the current poll phase completes.</li>
+<li>setTimeout() schedules a script to be run after a minimum threshold in ms has elapsed.</li>
+</ul>
+<p>The order in which the timers are executed will vary depending on the context in which they are called. If both are called from within the main module, then timing will be bound by the performance of the process (which can be impacted by other applications running on the machine).</p>
+</blockquote>
+<h3 id="process-nextTick-1"><a href="#process-nextTick-1" class="headerlink" title="process.nextTick()"></a>process.nextTick()</h3><p>严格来讲，process.nextTick不处于<code>Event loop</code>的任何阶段。<code>nextTickQueue</code>(<code>process.nextTick</code>的回调队列)会在当前操作(当前phase的执行)执行结束以后执行。 </p>
+<blockquote>
+<p>This is important when developing APIs in order to give users the opportunity to assign event handlers after an object has been constructed but before any I/O has occurred:</p>
+</blockquote>
+<p>根据本节开始处的Event loop示意图。当我们在构造对象后想要理解做一些事情，并且这些事情需要在所有I/O回调执行之前执行时，就有必要使用<code>process.nextTick()</code>，这也是<code>process.nextTick()</code>的用武之地之一。</p>
+<pre><code class="javascript">function MyThing(options) {
+    this.setupOptions(options);
+    process.nextTick(() =&gt; {
+        this.startDoingStuff();
+    });
+}
+var thing = new MyThing();
+thing.getReadyForStuff();
+</code></pre>
+<p>对于<code>process.nextTick()</code>需要注意的是：由于<code>process.nextTick()</code>会在<code>Event loop</code>的任意phase结束后立即执行，递归调用<code>process.nextTick()</code>会阻塞<code>Event loop</code>中的I/O调用。</p>
+<h2 id="process-stdin-process-stdout-process-stderr"><a href="#process-stdin-process-stdout-process-stderr" class="headerlink" title="process.stdin, process.stdout, process.stderr"></a>process.stdin, process.stdout, process.stderr</h2><ul>
+<li><code>process.stdin</code>返回一个与<code>stdin(fd 0)</code>一致或者相关联<code>Readable stream</code>。</li>
+<li><code>process.stdout</code>返回一个与<code>stdout(fd 1)</code>一致或相关联的<code>Writable stream</code>。</li>
+<li><code>process.stderr</code>返回一个与<code>stderr(fd 2)</code>一致或相关联的<code>Writable stream</code>。</li>
+</ul>
+<p>关于<code>process.stderr</code>与<code>process.stdout</code>的区别主要有以下几点:</p>
+<ol>
+<li><code>process.stderr</code>不能被<code>close</code>(<code>end()</code>会抛出异常)</li>
+<li><code>process.stderr</code>不会触发<code>finish</code>事件</li>
+<li><code>process.stderr</code>当输出至文件时，write将会阻塞</li>
+<li><code>process.stdout</code>和<code>process.stderr</code>在Unix平台上，当输出到TTY(Terminal)时，write将会被阻塞</li>
+<li><code>process.stdout</code>和<code>process.stderr</code>在Windows平台上，对于第4点，恰好相反</li>
+</ol>
+<h2 id="TTY-Terminals"><a href="#TTY-Terminals" class="headerlink" title="TTY Terminals"></a>TTY Terminals</h2><p>关于什么是tty，<a href="http://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con" target="_blank" rel="external">这里</a>有一篇科普文。</p>
+<p><code>process.stdout</code>和<code>process.stderr</code>在UNIX平台上当输出至TTYs(Terminals)时是阻塞的，所以可以有效防止<code>stdout</code>和<code>stderr</code>之间的相互干扰。<br>所以有如下方法可以检查Node.js是否在TTY的上下文中运行。</p>
+<pre><code class="bash">$ node -p &quot;Boolean(process.stdin.isTTY)&quot;
+true
+$ echo &quot;foo&quot; | node -p &quot;Boolean(process.stdin.isTTY)&quot;
+false
+
+$ node -p &quot;Boolean(process.stdout.isTTY)&quot;
+true
+$ node -p &quot;Boolean(process.stdout.isTTY)&quot; | cat
+false
+</code></pre>
+<h2 id="process-uptime"><a href="#process-uptime" class="headerlink" title="process.uptime()"></a>process.uptime()</h2><p>返回当前Node.js进程所运行的时间</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://nodejs.org/dist/latest-v7.x/docs/api/process.html" target="_blank" rel="external">Node.js v7.1.0 Documentation</a></li>
+<li><a href="http://unix.stackexchange.com/questions/76634/what-is-a-process-gid-and-what-purpose-does-it-serve" target="_blank" rel="external">What is a process GID and what purpose does it serve?</a></li>
+<li><a href="https://hackernoon.com/19-things-i-learnt-reading-the-nodejs-docs-8a2dcc7f307f#.exxn0rqoe" target="_blank" rel="external">19 things I’ve learnt from the Node.js Docs</a></li>
+<li><a href="https://github.com/nodejs/node/blob/master/doc/topics/event-loop-timers-and-nexttick.md" target="_blank" rel="external">The Node.js Event Loop, Timers, and process.nextTick()</a></li>
+<li><a href="https://segmentfault.com/a/1190000003063859" target="_blank" rel="external">Linux IO模式及 select、poll、epoll详解</a></li>
+<li><a href="http://unix.stackexchange.com/questions/4126/what-is-the-exact-difference-between-a-terminal-a-shell-a-tty-and-a-con" target="_blank" rel="external">What is the exat difference between a ‘terminal’, a ‘shell’, a ‘tty’ and a ‘console’</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[IScroll使用指南]]></title>
+      <url>http://blog.dzyhenry.com/2016/09/10/iscroll_guide/</url>
+      <content type="html"><![CDATA[<p>IScroll最核心的功能就是通过JavaScript控制元素的位移来实现有关滑动的各种需求。其主要工作方式是通过监听DOM事件，改变滑动元素的CSS属性值来实现元素的位移，同时做了大量浏览器的兼容性处理。</p>
+<p>当我们在进行移动端开发的时候，难免会遇到需要通过代码来控制元素滑动的场景，比如滑动列表的“下拉刷新”功能、日历或轮播组件的“snap功能”，这个时候IScroll就可以作为一个提高我们开发效率的利器。<br><a id="more"></a><br>本文主要简单介绍一下IScroll工作的原理，帮助大家更好地使用IScroll。<br>具体的API接口和使用可以参考<a href="http://iscrolljs.com/" target="_blank" rel="external">IScroll官方文档</a></p>
+<h2 id="IScroll代码简单分析"><a href="#IScroll代码简单分析" class="headerlink" title="IScroll代码简单分析"></a>IScroll代码简单分析</h2><h3 id="DOM事件的注册"><a href="#DOM事件的注册" class="headerlink" title="DOM事件的注册"></a>DOM事件的注册</h3><p>IScroll在初始化阶段就通过<code>_initEvent</code>方法注册了需要处理的DOM事件。IScroll对象实现了<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" target="_blank" rel="external">EventListener</a>接口，监听<code>touchstart</code>, <code>touchmove</code>, <code>touchend</code>等事件，作为用户交互的事件基础。下面是IScroll HandleEvent的部分代码，我们可以看到IScroll最核新的<code>Event Handler</code>就是<code>_start</code>，<code>_move</code>, <code>_end</code>，：</p>
+<pre><code class="javascript">handleEvent: function (e) {
+    switch ( e.type ) {
+        case &#39;touchstart&#39;:
+        case &#39;mousedown&#39;:
+        //...兼容事件
+            this._start(e);
+            break;
+        case &#39;touchmove&#39;:
+        case &#39;mousemove&#39;:
+        //...兼容事件
+            this._move(e);
+            break;
+        case &#39;touchend&#39;:
+        case &#39;mouseup&#39;:
+        //...兼容事件
+            this._end(e);
+            break;
+        case &#39;click&#39;:
+        // 注：IScroll默认会阻止click事件的默认行为和冒泡，会影响react的click事件，
+        // 我们可以在初始化时设置options: { click: true }，让click事件得以触发
+            if ( this.enabled &amp;&amp; !e._constructed ) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            break;
+    }
+}
+</code></pre>
+<h3 id="自定义事件"><a href="#自定义事件" class="headerlink" title="自定义事件"></a>自定义事件</h3><p>在处理浏览器事件的同时，IScroll也实现了自定义事件系统，目的是给用户提供一些Hook，方便处理滑动过程前、中、后以及刷新，销毁等事件，譬如: <code>beforeScrollStart</code>, <code>scrollStart</code>, <code>scrollEnd</code>，<code>destroy</code>，<code>scrollCancel</code>, <code>flick</code>, <code>refresh</code>等。</p>
+<p>下面的代码是IScroll自定义事件系统调用<code>Event Handler</code>代码，相当于DOM自定义事件的dispatch方法。</p>
+<pre><code class="javascript">_execEvent: function (type) {
+    if ( !this._events[type] ) {
+        return;
+    }
+    var i = 0,
+        l = this._events[type].length;
+
+    if ( !l ) {
+        return;
+    }
+    for ( ; i &lt; l; i++ ) {
+        this._events[type][i].apply(this, [].slice.call(arguments, 1));
+    }
+}
+</code></pre>
+<p>从下面的代码我们也可以看到，<code>beforeScrollStart</code>和<code>scrollEnd</code>事件会在<code>_start</code> handler的某个时机调用</p>
+<pre><code class="javascript">    _start: function (e) {
+        // some other code
+        if ( this.options.useTransition &amp;&amp; this.isInTransition ) {
+            this._transitionTime();
+            this.isInTransition = false;
+            pos = this.getComputedPosition();
+            this._translate(Math.round(pos.x), Math.round(pos.y));
+            this._execEvent(&#39;scrollEnd&#39;);
+        } else if ( !this.options.useTransition &amp;&amp; this.isAnimating ) {
+            this.isAnimating = false;
+            this._execEvent(&#39;scrollEnd&#39;);
+        }
+        // ...some other code
+        this._execEvent(&#39;beforeScrollStart&#39;);
+    }
+</code></pre>
+<h3 id="位移的实现"><a href="#位移的实现" class="headerlink" title="位移的实现"></a>位移的实现</h3><p>IScroll中提供了两种位移的方式，都是通过控制滑动元素的CSS样式来实现。</p>
+<ol>
+<li>当<code>useTransform</code>为false或者检测到浏览器不支持<code>transform</code>属性时，使用<code>position+top+left</code>的方式实现位移。</li>
+<li>当<code>useTransform</code>为true【默认】且浏览器支持<code>transform</code>属性时，使用<code>transform+translate</code>实现位移</li>
+</ol>
+<p>位移最终会封装成IScroll的prototype属性上的<code>_translate</code>方法</p>
+<pre><code class="javascript">_translate: function (x, y) {
+    if ( this.options.useTransform ) {
+        this.scrollerStyle[utils.style.transform] = &#39;translate(&#39; + x + &#39;px,&#39; + y + &#39;px)&#39; + this.translateZ; // 使用transform属性的方式
+    } else {
+        // 使用定位的方式
+        x = Math.round(x);
+        y = Math.round(y);
+        this.scrollerStyle.left = x + &#39;px&#39;;
+        this.scrollerStyle.top = y + &#39;px&#39;;
+    }
+    this.x = x; // 更新坐标
+    this.y = y;
+},
+</code></pre>
+<p>并且暴露给用户的<code>scrollTo</code>, <code>scrollToElement</code>API也依赖于<code>_translate</code>方法。</p>
+<pre><code class="javascript">scrollTo: function (x, y, time, easing) {
+    easing = easing || utils.ease.circular;
+    this.isInTransition = this.options.useTransition &amp;&amp; time &gt; 0;
+    var transitionType = this.options.useTransition &amp;&amp; easing.style;
+    if ( !time || transitionType ) {
+            if(transitionType) {
+                this._transitionTimingFunction(easing.style);
+                this._transitionTime(time);
+            }
+        this._translate(x, y);
+    } else {
+        this._animate(x, y, time, easing.fn);  // _animate也依赖于_translate
+    }
+}
+</code></pre>
+<h3 id="位移中的动画实现"><a href="#位移中的动画实现" class="headerlink" title="位移中的动画实现"></a>位移中的动画实现</h3><p>对于滑动元素滑动中的动画，为了兼容性处理，iscroll同样提供了两种方式：</p>
+<ol>
+<li>当useTransition为false或者检测到浏览器不支持transition时，采用<a href="http://www.paulirish.com/2011/requestanimationframe-for-smart-animating/" target="_blank" rel="external">requestAnimationFrame</a>的回调来模拟位移，如果requestAnimationFrame也不支持的话，就采用<code>setTimeout(() =&gt; _transition(), 1000/60)</code>来模拟一帧一帧的位移。</li>
+<li>当useTransition为true，且浏览器支持transition属性，则直接使用<code>_translate</code>方法实现位移即可，滑动的动画依靠浏览器自身实现。</li>
+</ol>
+<p>IScroll会计算每次滑动动作的开始时间和结束时间，并计算滑动速度，计算滑动动量，使滑动变得更加顺畅。</p>
+<h3 id="一些常见的API或者属性"><a href="#一些常见的API或者属性" class="headerlink" title="一些常见的API或者属性"></a>一些常见的API或者属性</h3><ol>
+<li><code>maxScrollY, maxScrollX</code>: IScroll在初始化时会计算滑动元素(Scroller，后面统称Scroller)以及其容器(Scroll Wrapper，后面统称Scroll Wrapper)的高度和宽度，maxScrollY和maxScrollx代表的就是可以滑动的最大距离。</li>
+</ol>
+<pre><code class="javascript">maxScrollY = (Scroll Wrapper).clientHeight - Scroller.clientHeight
+maxScrollX = (Scroll Wrapper).clientWidth - Scroller.clientWidth
+</code></pre>
+<p>所以maxScrollX和maxScrollY都是小于等于0的。</p>
+<ol>
+<li><code>y, x</code>, 分别指当前Scroller滑动的垂直距离和水平距离，初始值都是0。</li>
+<li>通常情况下，当<code>y &lt; maxScrollY</code>时，当<code>touchend</code>的<code>event handler</code>会将Scroller恢复到<code>y=maxScrollY</code>的距离，<code>y &gt;0</code>时，Scroller也会恢复到<code>y=0</code>的位置(水平方向的<code>x</code>同理)。</li>
+<li><code>scrollTo(x, y, time)</code>，控制Scroller滑动到某个位置。</li>
+<li><code>refresh</code>，重新计算maxScrollX，maxScrollY等参数。</li>
+</ol>
+<h3 id="一些常见的使用场景"><a href="#一些常见的使用场景" class="headerlink" title="一些常见的使用场景"></a>一些常见的使用场景</h3><ol>
+<li><p>如何扩大滑块的滑动距离？<br>改变<code>maxScrollY</code>和<code>maxScrollX</code>即可。</p>
+</li>
+<li><p>当Scroller的高度(宽度)小于Scroll Wrapper的高度(宽度)时，默认情况下，Scroller是无法滑动的，那么怎么让它又可以滑动呢？<br>设置<code>hasVerticalScrol</code>和<code>hasHorizontalScroll</code>为<code>true</code>即可</p>
+</li>
+<li><p>从新计算maxScrollY和maxScrollX，调用<code>refresh</code>即可</p>
+</li>
+</ol>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[Excerpt]]></title>
+      <url>http://blog.dzyhenry.com/2016/08/21/understanding_the_difference_jit_aot/</url>
+      <content type="html"><![CDATA[<h2 id="Interpreter"><a href="#Interpreter" class="headerlink" title="Interpreter"></a>Interpreter</h2><blockquote>
+<p>In computer science, an interpreter is a computer program that directly executes, i.e. performs, instructions written in a programming or scripting language, without previously compiling them into a machine language program. An interpreter generally uses one of the following strategies for program execution:<br><a id="more"></a></p>
+</blockquote>
+<ol>
+<li>parse the source code and perform its behavior directly.</li>
+<li>translate source code into some efficient intermediate representation and immediately execute this.</li>
+<li>explicitly execute stored precompiled code made by a compiler which is part of the interpreter system.<br>—–<a href="https://en.wikipedia.org/wiki/Interpreter_(computing" target="_blank" rel="external">Interpreter (computing)</a>)</li>
+</ol>
+<p>An interpreter for language <strong>X</strong> is a program(or a machine, or just some kind of mechanism in general)that <strong>excutes</strong> any program <strong>P</strong> written in language <strong>X</strong> such that is performs the effects and evaluates the results as prescribed by the specification of <strong>X</strong>.</p>
+<h2 id="Compiler"><a href="#Compiler" class="headerlink" title="Compiler"></a>Compiler</h2><p>A compiler from <strong>X</strong> to <strong>Y</strong> is a program(or a machine, or just some kine of mechanism in general)that translates any program <strong>p</strong> from some language <strong>X</strong> into a semantically equivalent program p’ in some language <strong>Y</strong> in such a way that the semantics of the program are preserved, i.e. that interpreting p’ with an interpreter for <strong>Y</strong> will yield the same results and have the same effects as interpreting <strong>p</strong> with an interpreter for <strong>X</strong>.(Note that <strong>X</strong> and <strong>Y</strong> may be the same language.)</p>
+<h2 id="Ahead-of-Time-AOT-amp-amp-Just-in-Time-JIT"><a href="#Ahead-of-Time-AOT-amp-amp-Just-in-Time-JIT" class="headerlink" title="Ahead-of-Time(AOT) &amp;&amp; Just-in-Time(JIT)"></a>Ahead-of-Time(AOT) &amp;&amp; Just-in-Time(JIT)</h2><p>The terms Ahead-of-Time(AOT) and Just-in-Time(JIT) refer to when compilation take place: the “time” reffered to in those terms is “runtime”, i.e. a JIT compiler compiles the program as it is running, an AOT compiler compiles the program before it is running. Note that this requires that a JIT compiler from language <strong>X</strong> to language <strong>Y</strong> must somehow work together with an interpreter for language <strong>Y</strong>, otherwise there wouldn’t be any way to run the program.</p>
+<p>Note that this distinction doesn’t make sense for interpreters: an interpreter runs the program, the idea of an AOT interpreter that runs a programming before it is running or a JIT interpreter that runs a program while it is running is nonsensical.</p>
+<p>So, we have<br><strong>AOT compiler: compiles before running</strong><br><strong>JIT compiler: compiles while running</strong><br><strong>interpreter: runs</strong></p>
+<p>Interpreters and compilers may be combined into a single language execution engine. There are two typical scenarios where this is done.</p>
+<h3 id="1-First-Scenario"><a href="#1-First-Scenario" class="headerlink" title="1 First Scenario"></a>1 First Scenario</h3><p>Combining an AOT compiler from X to Y with an interpreter for Y. Here, typically X is some higher-level language optimized for readability by humans, whereas Y is a compact language (often some kind of bytecode) optimized for interpretability by machines. </p>
+<h3 id="2-Second-Scenario"><a href="#2-Second-Scenario" class="headerlink" title="2 Second Scenario"></a>2 Second Scenario</h3><p>The other way to combine an interpreter and a compiler is a mixed-mode execution engine.  Here, we “mix” two “modes” of implementing the same language together, i.e. an interpreter for X and a JIT compiler from X to Y. Code that has been compiled by a compiler tends to run faster than code that is executed by an interpreter, but actually compiling the code first takes time. So, to bridge this time where the JIT compiler is busy compiling the code, the interpreter can already start running the code, and once the JIT is finished compiling, we can switch execution over to the compiled code. </p>
+<p>More interesting possibilities are, for example, to not start compiling right away, but let the interpreter run for a bit, and collect statistics, profiling information, type information, information about the likelihood of which specific conditional branches are taken, which methods are called most often etc. and then feed this dynamic information to the compiler so that it can generate more optimized code.<br>It is also possible and in fact common to combine those two approaches: two phases with the first being an AOT compiler that compiles X to Y and the second phase being a mixed-mode engine that both interprets Y and compiles Y to Z. <strong>The Rubinius Ruby execution engine works this way.</strong></p>
+<p>Note that the role that the interpreter plays in the case of a mixed-mode execution engine, namely providing fast startup, and also potentially collecting information and providing fallback capability may alternatively also be played by a second JIT compiler. This is how V8 works, for example. <strong>V8 never interprets, it always compiles.</strong> The first compiler is a very fast, very slim compiler that starts up very quick. The code it produces isn’t very fast, though. This compiler also injects profiling code into the code it generates. The other compiler is slower and uses more memory, but produces much faster code, and it can use the profiling information collected by running the code compiled by the first compiler.</p>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://en.wikipedia.org/wiki/Interpreter_%28computing%29" target="_blank" rel="external">Interpreter (computing)</a></li>
+<li><a href="https://en.  wikipedia.org/wiki/Just-in-time_compilation" target="_blank" rel="external">Just-in-time compilation</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Ahead-of-time_compilation" target="_blank" rel="external">Ahead-of-time compilation</a></li>
+<li><a href="http://programmers.stackexchange.com/questions/246094/understanding-the-differences-traditional-interpreter-jit-compiler-jit-interp/269878#269878" target="_blank" rel="external">Understanding the differences: traditional interpreter, JIT compiler, JIT interpreter and AOT compiler</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[理解DOM事件模型]]></title>
+      <url>http://blog.dzyhenry.com/2016/05/12/dom_event_model/</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>注：本文内容基本都来自W3C文档，所有关键概念都有出处链接，遇到没解释清楚的地方建议直接阅读原文。</p>
+</blockquote>
+<p>要弄明白DOM的事件模型，先得弄明白DOM是怎么回事儿。DOM不是HTML，DOM与HTML的关系倒是有点儿像ECMAScript和JavaScript的关系。</p>
+<h2 id="About-DOM-Document-Object-Model，文档对象模型"><a href="#About-DOM-Document-Object-Model，文档对象模型" class="headerlink" title="About DOM(Document Object Model，文档对象模型)"></a>About DOM(Document Object Model，文档对象模型)</h2><blockquote>
+<p>The Document Object Model is a platform- and language-neutral interface that will allow programs and scripts to dynamically access and update the content, structure and style of documents. The document can be further processed and the results of that processing can be incorporated back into the presented page.<br>—<a href="https://www.w3.org/DOM/" target="_blank" rel="external">W3C Document Object Model</a></p>
+</blockquote>
+<a id="more"></a>
+<p>正如W3C所定义的，DOM是独立于平台和语言的接口，该接口为程序和脚本提供了对文档的内容、结构和样式的动态获取和更新的功能。</p>
+<p>DOM的出现来自对动态页面的需求，先有DOM的实现（Netscape DOM0），再有各个厂商对DOM实现规范的需求，再有了<a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">W3C Activity Statement</a>对于DOM发展的规范，然后才有了我们所说的“DOM”。</p>
+<h3 id="1-1-DOM发展历史"><a href="#1-1-DOM发展历史" class="headerlink" title="1.1 DOM发展历史"></a>1.1 DOM发展历史</h3><p>下面简单介绍下DOM发展的历史。</p>
+<h4 id="1-1-1-DOM0"><a href="#1-1-1-DOM0" class="headerlink" title="1.1.1 DOM0"></a>1.1.1 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/glossary.html#dt-DOM-Level-0" target="_blank" rel="external">DOM0</a></h4><blockquote>
+<p>The term “DOM Level 0” refers to a mix (not formally specified) of HTML document functionalities offered by Netscape Navigator version 3.0 and Microsoft Internet Explorer version 3.0. In some cases, attributes or methods have been included for reasons of backward compatibility with “DOM Level 0”.</p>
+</blockquote>
+<p>DOM0指的是Necscape3.0和IE3.0提供对于HTML文档功能，实现了包括元素(HTML Element)、表单(Form)、图像(Image)等的接口和方法。DOM0虽然年代久远，某些实现并不符合新的DOM理念，但为了向后兼容，很多现代浏览器仍然支持DOM0的某些方法和属性。即便某些方法的实现原理有所不同，但提供了可用性。DOM0出现后，各厂商意识到DOM的前景，纷纷向W3C建议DOM的规范化。于是出现了W3C DOM Activity Statement以及DOM1、DOM2、DOM3规范(Specification)。W3C关于DOM规范的清单，在<a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">这里</a>。</p>
+<h4 id="1-1-2-DOM1"><a href="#1-1-2-DOM1" class="headerlink" title="1.1.2 DOM1"></a>1.1.2 <a href="https://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/" target="_blank" rel="external">DOM1</a></h4><p>DOM1 1.0版本发布于1998年10月1日，是第一个DOM规范。DOM1包含两部分:</p>
+<ol>
+<li><a href="https://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-core.html" target="_blank" rel="external">DOM1 Core</a>：定义了DOM最基本的接口，包括Document，Node，NodeList等等。</li>
+<li><a href="https://www.w3.org/TR/1998/REC-DOM-Level-1-19981001/level-one-html.html" target="_blank" rel="external">DOM1 THML</a>：HTML文档是DOM的一种实现，该规范定义了基于DOM1 Core的HTML文档实现。</li>
+</ol>
+<h4 id="1-1-3-DOM2"><a href="#1-1-3-DOM2" class="headerlink" title="1.1.3 DOM2"></a>1.1.3 <a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">DOM2</a></h4><p>DOM2规范在2000年11月13日发布，主要包含6个模块，相比于DOM1，DOM2更加丰富，更加完善，目前主流浏览器对DOM2有着良好的支持。(关于浏览器支持效果，详见<a href="https://developer.mozilla.org/fr/docs/DOM_Levels" target="_blank" rel="external">MDN DOM Levels</a>)</p>
+<ol>
+<li><a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-249F15BA" target="_blank" rel="external">DOM2 Core</a>: 相比于DOM1 Core，DOM2丰富了Document，Node等接口的功能，详见<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/changes.html#DOMLevel1to2Changes" target="_blank" rel="external">Changes between DOM Level 1 Core and DOM Level 2 Core</a>。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Views/views.html" target="_blank" rel="external">DOM2 View</a>：View提供的是DOM的表现形式，同一个文档源(document source)，可能有不同的表现形式，DOM2 View引入了Abstract View和Document View接口。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html" target="_blank" rel="external">DOM2 Event</a>：DOM 事件处理系统规范，DOM1中并未对DOM的事件模型进行定义，在DOM2中规范事件模型(Event Model)主要有两个目的：1)设计一套通用的事件系统，实现事件处理程序的注册和注销，描述事件的流动(Event Flow)，事件的上下文信息(Contextual Information )等；2)提供一套规范子集兼容老版本浏览器DOM0的事件实现。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Style/" target="_blank" rel="external">DOM2 Style</a>：程序和脚本动态地获取和更新DOM的样式，提供包括Style Sheet, Cascading Style Sheet, CSSRule, CSSStyleDeclaration, getComputedStyle接口。DOM2 Style的实现基于DOM2 Core和DOM2 View。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Traversal-Range/" target="_blank" rel="external">DOM2 Traverse and Range</a>：DOM2 Traverse是关于文档节点遍历的规范，包括Treewalker，NodeIterator和NodeFilter等；DOM2 Range是关于DOM片段(Document Fragment)操作的规范，譬如DocumentFragment。</li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-HTML/html.html" target="_blank" rel="external">DOM2 HTML</a>：在DOM1 HTML的基础上结合DOM2 Core推出了一些新的接口和属性，具体详见<a href="https://www.w3.org/TR/DOM-Level-2-HTML/changes.html" target="_blank" rel="external">DOM-Level-2-HTML-Changes</a>。</li>
+</ol>
+<h4 id="1-1-4-DOM3"><a href="#1-1-4-DOM3" class="headerlink" title="1.1.4 DOM3"></a>1.1.4 DOM3</h4><p>DOM3首次发布于2004年4月，主要包括Core、Load and Save、Validation、XPath、View and Formatting、Events和Abstract Schemas7个模块。目前主流浏览器对DOM3的支持比较有限。</p>
+<h2 id="DOM-Event-Model"><a href="#DOM-Event-Model" class="headerlink" title="DOM Event Model"></a>DOM Event Model</h2><p>下面将详细介绍DOM事件模型。</p>
+<h3 id="2-1-DOM0级事件"><a href="#2-1-DOM0级事件" class="headerlink" title="2.1 DOM0级事件"></a>2.1 DOM0级事件</h3><p>DOM0是在W3C标准之前的实现，DOM0级事件有以下特点：</p>
+<ol>
+<li><p>DOM0级事件处理程序被认为是元素的方法，要为元素添加事件处理程序，首先必须获取该元素，事件处理程序中的this引用了当前元素。添加事件一般通过下面的方式：</p>
+<pre><code> var btn = document.getElementById(&#39;myBtn&#39;);
+ btn.onclick = function() {
+     alert(this.id);  // &#39;myBtn&#39;
+ }
+</code></pre></li>
+<li><p>一个元素的同一种事件类型的事件处理程序只能有一个，也就是说对同一个事件类型重复赋值事件处理程序，后面的事件处理程序会覆盖之前的事件处理程序。</p>
+</li>
+<li><p>虽然DOM0级事件触发的顺序与DOM2中的冒泡顺序相同，但实际上在DOM0的实现过程中并未有事件流(Event Flow)的的概念，所以DOM0级事件不能够在事件捕获阶段触发。</p>
+</li>
+</ol>
+<h3 id="2-2-DOM2级事件"><a href="#2-2-DOM2级事件" class="headerlink" title="2.2 DOM2级事件"></a>2.2 DOM2级事件</h3><p>在DOM1中，只对DOM Core和DOM HTML有相关说明，所以没有DOM1级事件，所以DOM2级事件是W3C第一个DOM事件系统规范。目前主流浏览器对其有良好支持。</p>
+<h4 id="2-2-1-事件流-Event-Flow"><a href="#2-2-1-事件流-Event-Flow" class="headerlink" title="2.2.1 事件流(Event Flow)"></a>2.2.1 事件流(<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-flow" target="_blank" rel="external">Event Flow</a>)</h4><p>事件流指一个事件在DOM树中从DOM根节点()向目标节点流动，再从目标节点向根节点反向流动的过程，前者称为事件的捕获阶段，后者称为事件的冒泡阶段。能够在DOM中流动的事件都必须实现以下接口规范，该规范定义了事件类型的属性和方法。下面的Event接口规范来自<a href="https://dom.spec.whatwg.org/#introduction-to-dom-events" target="_blank" rel="external">WHTAWG</a>，与W3C<code>DOM2 Event</code>稍稍不同，原因是下面这个是结合了<code>DOM3 Event</code>的 目前主流浏览器实际实现方案。</p>
+<pre><code>[Constructor(DOMString type, optional EventInit eventInitDict),
+Exposed=(Window,Worker)]
+interface Event {
+  readonly attribute DOMString type; // 事件类型，如&#39;click、dbclick、mouseenter、mouseleave等&#39;
+  readonly attribute EventTarget? target; // 事件目标，事件触发以后不会改变。
+  readonly attribute EventTarget? currentTarget; // 当前事件监听程序执行时所在的事件目标，会随着事件的流动改变
+
+  // 事件阶段, 0、事件还未触发；1、事件捕获阶段；2、事件处于目标阶段；3、事件冒泡阶段
+  const unsigned short NONE = 0;
+  const unsigned short CAPTURING_PHASE = 1;
+  const unsigned short AT_TARGET = 2;
+  const unsigned short BUBBLING_PHASE = 3;
+  readonly attribute unsigned short eventPhase; 
+
+  void stopPropagation(); // 停止事件冒泡
+  void stopImmediatePropagation();
+
+  readonly attribute boolean bubbles; // 标识当前事件的状态是否可冒泡
+  readonly attribute boolean cancelable; // 标识当前事件的默认行为是否可取消
+  void preventDefault(); // 阻止事件默认行为
+  readonly attribute boolean defaultPrevented; // 标识当前事件的状态是否被阻止了默认行为
+  readonly attribute boolean scoped;
+
+  [Unforgeable] readonly attribute boolean isTrusted; // 标识当前事件是否由浏览器触发
+  readonly attribute DOMTimeStamp timeStamp;
+
+  void initEvent(DOMString type, boolean bubbles, boolean cancelable); // historical
+};
+</code></pre><p>任何一个事件都有一个相应的事件目标(<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventTarget" target="_blank" rel="external">Event Target</a>)，该事件目标就是Event接口中的targe属性。当事件到达事件目标后，注册在该目标的所有事件监听程序(<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" target="_blank" rel="external">Event Listner</a>)都被触发了。如果事件的捕获(Cpature)或(bubbling)冒泡被关闭，那么该事件的流动将会在该目标上的监听程序执行结束以后停止；反之，则会继续流动。</p>
+<h4 id="2-2-2-事件捕获阶段-Event-Capture"><a href="#2-2-2-事件捕获阶段-Event-Capture" class="headerlink" title="2.2.2 事件捕获阶段(Event Capture)"></a>2.2.2 事件捕获阶段(Event Capture)</h4><p>事件捕获阶段是指事件在到达事件目标(Event Target)之前被注册在目标祖先节点的事件监听程序拦截的过程。捕获的过程往往从根节点出发(一般而言是Document节点)，一直派遣到(dispatch)事件的目标节点。事件在派遣(dispatch)之前，其事件流动链会被初始化，即从文档树的根节点到事件目标的节点序列。</p>
+<p>在事件目标(EventTarget)上注册的事件监听程序(Event Listener)可以在EventTarget的addEventListner方法上通过设置useCapture参数的值为true来实现在事件捕获阶段执行事件监听程序。如果在事件监听程序(Event Listener)执行的过程中调用了Event的<code>stopPropagation</code>方法，该事件将在流动到派遣事件的目标(target)以后停止冒泡。</p>
+<h4 id="2-2-3-事件冒泡阶段-Event-bubbling"><a href="#2-2-3-事件冒泡阶段-Event-bubbling" class="headerlink" title="2.2.3 事件冒泡阶段(Event bubbling)"></a>2.2.3 事件冒泡阶段(Event bubbling)</h4><p>事件冒泡与事件捕获的过程恰好相反，从派遣事件的目标节点到根节点相继执行，冒泡阶段的任一事件监听程序调用<code>stopPropagation</code>都将阻止事件的后续流动。</p>
+<h4 id="2-2-4-事件的取消-Event-cancelation"><a href="#2-2-4-事件的取消-Event-cancelation" class="headerlink" title="2.2.4 事件的取消(Event cancelation)"></a>2.2.4 事件的取消(Event cancelation)</h4><p>对于某些事件，DOM实现(DOM Implementation)为其提供了默认的行为。比如：<code>a</code>标签的<code>click</code>事件，点击<code>a</code>标签，默认行为就是激活超链接。对于这种类型的事件，往往其属性<code>canceable</code>的值为<code>true</code>，在处理这类事件之前，必需先检查该事件类型是否有注册事件监听程序(Event Listener)，并且优先执行这些注册的事件监听程序，这些事件监听程序可以通过调用<code>Event.preventDefault()</code>来取消该事件的默认行为。</p>
+<p>下面这张图很好地表现了DOM事件流。<br><img src="./images/eventflow.png" width="500px" alt="line-box" title="line-box"></p>
+<h4 id="2-2-5-事件监听的管理-Event-Listener-Registration"><a href="#2-2-5-事件监听的管理-Event-Listener-Registration" class="headerlink" title="2.2.5 事件监听的管理(Event Listener Registration)"></a>2.2.5 事件监听的管理(Event Listener Registration)</h4><p>事件监听的管理主要包括事件监听程序的创建、注册、注销，涉及到的接口设计包括<code>Event</code>、<code>Event Target</code>、<code>Event Listener</code>。</p>
+<h4 id="2-2-5-1-Event-Target"><a href="#2-2-5-1-Event-Target" class="headerlink" title="2.2.5.1 Event Target"></a>2.2.5.1 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventTarget" target="_blank" rel="external">Event Target</a></h4><pre><code>// Introduced in DOM Level 2:
+interface EventTarget {
+  void  addEventListener(in DOMString type, in EventListener listener, in boolean useCapture); // 注册事件监听程序
+  void  removeEventListener(in DOMString type, in EventListener listener, in boolean useCapture); // 移除事件监听程序
+  boolean   dispatchEvent(in Event evt)  raises(EventException); // 派遣(触发)事件
+};
+</code></pre><p>对于<code>EventTarget</code>，<strong>所有</strong>实现了DOM事件模型的DOM节点(Node)都实现了接口，也就是说对于任何一个实现了DOM2的DOM Element，都可以调用<code>addEventListener</code>，<code>removeEventListener</code>，<code>dispatchEvent</code>方法。</p>
+<h4 id="2-2-5-2-AddEventListener"><a href="#2-2-5-2-AddEventListener" class="headerlink" title="2.2.5.2 AddEventListener"></a>2.2.5.2 AddEventListener</h4><p>1) 如果一个事件监听程序(Event Listener)的添加时机为事件目标(Event Target)上执行另外一个事件监听程序的过程中，该事件监听程序不会在当前的EventPhase执行，但可能会在之后的Event Phase执行。举个例子：</p>
+<pre><code>var el = document.getElementById(&#39;example&#39;);
+el.addEventListener(&#39;click&#39;, handler, true // useCapture =  true);
+funcition handler() {
+    ... 
+    // do something
+    el.addEventListener(&#39;click&#39;, anotherHandler);
+}
+function anotherHandler() {
+    ...
+    // do something
+    el.removeEventHandler(&#39;click&#39;, anotherHandler); // 避免不断地增加eventHandler
+}
+</code></pre><p>上面的例子中<code>handler</code>会在事件的捕获阶段执行，执行过程中，为该元素又添加了<code>anotherHandler</code>(事件执行会在冒泡阶段)，所以<code>anotherHandler</code>也会执行。当然，这种需求在实际应用中很少见。</p>
+<p>2) 对于相同事件类型(event type)、相同参数的addEventListener调用（也就是完全相同的事件注册），重复添加的事件监听程序会被丢弃。</p>
+<p>3) <code>useCapture</code>为true的事件监听程序，会在事件的捕获阶段执行，但不会在事件冒泡的时候继续执行。</p>
+<h4 id="2-2-5-3-Event-Listener"><a href="#2-2-5-3-Event-Listener" class="headerlink" title="2.2.5.3 Event Listener"></a>2.2.5.3 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-EventListener" target="_blank" rel="external">Event Listener</a></h4><pre><code>// Introduced in DOM Level 2:
+interface EventListener {
+  void  handleEvent(in Event evt);  // 当对应的事件类型被触发以后调用
+};
+</code></pre><p>Event Listener通过DOM Node调用addEventListener的时候对向该Node的<code>handler list</code>(关于这个handler list，虽然W3C规范里面并未提及，但实现事件的机制基于<a href="https://en.wikipedia.org/wiki/Observer_pattern" target="_blank" rel="external">观察者模式</a>，所以理论上讲应该有一个维护Event Listener的实例，只是不同的User Agent的具体实现方式各异)里面添加该Event Listener。下图就是Chrome DevTools里面看到的注册到<code>li</code>元素的Event Listener。</p>
+<p>注：使用<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Core-20001113/core.html#ID-1950641247" target="_blank" rel="external">Node</a>的<code>cloneNode</code>方法并不会将该Node上注册的EventListener注册到复制的新Node上。</p>
+<p><img src="./images/event_listeners.png" width="800px" alt="line-box" title="line-box"></p>
+<h4 id="2-2-5-4-Event"><a href="#2-2-5-4-Event" class="headerlink" title="2.2.5.4 Event"></a>2.2.5.4 <a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-Event" target="_blank" rel="external">Event</a></h4><p>关于DOM2的Event接口前面已经基本覆盖了， 就不再赘述。</p>
+<pre><code>// Introduced in DOM Level 2:
+interface Event {
+  // PhaseType
+  const unsigned short      CAPTURING_PHASE                = 1;
+  const unsigned short      AT_TARGET                      = 2;
+  const unsigned short      BUBBLING_PHASE                 = 3;
+
+  readonly attribute DOMString        type;
+  readonly attribute EventTarget      target;
+  readonly attribute EventTarget      currentTarget;
+  readonly attribute unsigned short   eventPhase;
+  readonly attribute boolean          bubbles;
+  readonly attribute boolean          cancelable;
+  readonly attribute DOMTimeStamp     timeStamp;
+  void  stopPropagation();
+  void  preventDefault();
+  void  initEvent(in DOMString eventTypeArg,  in boolean canBubbleArg,  in boolean cancelableArg);
+};
+</code></pre><h4 id="2-2-6-自定义事件-Synthetic-Event"><a href="#2-2-6-自定义事件-Synthetic-Event" class="headerlink" title="2.2.6 自定义事件(Synthetic Event)"></a>2.2.6 自定义事件(Synthetic Event)</h4><p>DOM2提供了创建事件的接口：<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-DocumentEvent" target="_blank" rel="external">Document Event Interface</a>，我们可以通过这个接口创建自定义事件，并通过<code>Event Target</code>的<code>addEventListener</code>、<code>removeEventListener</code>、<code>dispatchEvent</code>方法在管理该事件。</p>
+<pre><code>// Introduced in DOM Level 2:
+interface DocumentEvent {
+  Event createEvent(in DOMString eventType)
+                                        raises(DOMException);
+};
+</code></pre><p>举一个简单的使用例子或许更直观</p>
+<pre><code>var e = doucment.createEvent(&#39;MouseEvents&#39;); // 创建Synthetic事件
+e.initMouseEvent(&#39;click&#39;); // 初始化事件类型
+$0.addEventListener(&#39;click&#39;, ev =&gt; console.log(&#39;synthentic event&#39;)); // 事件注册
+$0.dispatchEvent(e); // 事件派遣
+</code></pre><p><img src="./images/synthetic_event.png" width="800px" alt="line-box" title="line-box"><br>上图中事件监听程序触发了两次，一次通过<code>dispatchEvent</code>触发，一次是我click元素时所触发。</p>
+<p>还有另外一种创建自定义事件的方式，这种方式是规范推荐的。</p>
+<pre><code>var e = new Event(&#39;click&#39;); // 直接创建并初始化事件类型，一步到位 
+$0.addEventListener(&#39;click&#39;, ev =&gt; console.log(&#39;synthentic event&#39;)); // 事件注册
+$0.dispatchEvent(e); // 事件派遣 
+</code></pre><p>在DOM3 Event中还提供了<code>CutomerEvent</code>接口，可以在事件中携带信息。</p>
+<pre><code>var e = new CutomerEvent(&#39;click&#39;, {detail: { infoObj }}); // 直接创建并初始化自定义事件类型，并携带事件信息
+$0.addEventListener(&#39;click&#39;, ev =&gt; console.log(&#39;synthentic event&#39;)); // 事件注册
+$0.dispatchEvent(e); // 事件派遣
+</code></pre><p>自定义事件有很多类型，包括<a href="https://www.w3.org/TR/2000/REC-DOM-Level-2-Events-20001113/events.html#Events-UIEvent" target="_blank" rel="external">UIEvent</a>、 MouseEvent,、KeyEvent、HTMLEvent等，这里不再赘述。</p>
+<h3 id="2-3-DOM3级事件"><a href="#2-3-DOM3级事件" class="headerlink" title="2.3 DOM3级事件"></a>2.3 DOM3级事件</h3><p>DOM3级事件规范发布于2003年7月，至今也有10多年了。DOM3 Event基本上是在DOM2 Event的框架下进行了扩展和细致化，这里是DOM3 Event的<a href="https://www.w3.org/TR/2003/NOTE-DOM-Level-3-Events-20031107/changes.html" target="_blank" rel="external">change list</a>。</p>
+<h2 id="DOM-Event的处理流程-DOM-Event-Dispatch"><a href="#DOM-Event的处理流程-DOM-Event-Dispatch" class="headerlink" title="DOM Event的处理流程(DOM Event Dispatch)"></a>DOM Event的处理流程(<a href="https://dom.spec.whatwg.org/#dispatching-events" target="_blank" rel="external">DOM Event Dispatch</a>)</h2><p>本节将简单介绍一下，一个事件从初始化到最终结束的生命周期。</p>
+<h3 id="3-1-观察者模式"><a href="#3-1-观察者模式" class="headerlink" title="3.1 观察者模式"></a>3.1 <a href="https://en.wikipedia.org/wiki/Observer_pattern" target="_blank" rel="external">观察者模式</a></h3><p>事件机制基于观察者模式(<a href="https://en.wikipedia.org/wiki/Observer_pattern" target="_blank" rel="external">Observer Pattern</a>)，一张图足以说明观察着模式的核心内容，</p>
+<p><img src="./images/observer_pattern.png" width="500px" alt="line-box" title="line-box"></p>
+<p>如果应用于DOM事件模型，Subject对应于EventTarget，registerObserver对应于addEventListener方法，unRegisterObserver，对应于removeEventListener方法，notifyObservers对应于dispatchEvent方法。具体对应关系如下图所示。</p>
+<p><img src="./images/observer_pattern_and_event.png" width="500px" alt="line-box" title="line-box"></p>
+<h3 id="3-2-DOM-Event处理流程"><a href="#3-2-DOM-Event处理流程" class="headerlink" title="3.2 DOM Event处理流程"></a>3.2 DOM Event处理流程</h3><ol>
+<li>step 1<br>初始化事件<a href="https://dom.spec.whatwg.org/#dfnReturnLink-11" target="_blank" rel="external">Event Initialization</a>：创建一个事件实体，具体方式有两种方式：1）UA创建native事件以及相应的<code>Event Contextual Information</code>；2）通过Synthetic Event方式自定义DOM事件。</li>
+<li>step 2<br>事件注册： <code>Event Target</code>调用<code>addEventListener</code>方法，添加相应事件类型(Event type)的事件监听程序(Event Listener)。</li>
+<li>step 3<br>事件派遣： <code>Event Target</code>调用<code>dispatchEvent</code>或者UA自己派遣事件。事件派遣的流程比较复杂。主要包含<code>Event</code>在<code>Event Target</code>list(从根节点到target node的所有节点)流动过程中对<code>Event</code>上下文信息的操作，以及是否调用、怎么调用<code>EventListener</code>的<code>handleEvent</code>方法等。具体实现流程请看<a href="https://dom.spec.whatwg.org/#dispatching-events" target="_blank" rel="external">这里</a>(实在无力再整理这个部分了)。</li>
+</ol>
+<h2 id="Reference"><a href="#Reference" class="headerlink" title="Reference"></a>Reference</h2><ul>
+<li><a href="https://www.w3.org/DOM/" target="_blank" rel="external">W3C: DOM</a></li>
+<li><a href="https://www.w3.org/DOM/Activity" target="_blank" rel="external">W3C: DOM Activity Statement</a></li>
+<li><a href="https://dom.spec.whatwg.org/#dom-event-event" target="_blank" rel="external">WATHWG: DOM Specification</a></li>
+<li><a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html" target="_blank" rel="external">W3C: Document Object Model Events</a></li>
+<li><a href="https://developer.mozilla.org/fr/docs/DOM_Levels" target="_blank" rel="external">MDN: DOM Levels</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[ABNF(Augmented Backus Naurm Form)]]></title>
+      <url>http://blog.dzyhenry.com/2016/01/07/abnf/</url>
+      <content type="html"><![CDATA[<h2 id="什么是ABNF"><a href="#什么是ABNF" class="headerlink" title="什么是ABNF?"></a>什么是<a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">ABNF</a>?</h2><p>在计算机科学中，ABNF(Augmented Backus Naur Form)是一种基于BNF的元语言，<a href="https://zh.wikipedia.org/wiki/%E5%85%83%E8%AA%9E%E8%A8%80" target="_blank" rel="external">元语言</a>是指讨论或研究语言本身时所使用的语言或符号，通俗讲就是描述语言的语言。<a href="https://zh.wikipedia.org/wiki/%E5%B7%B4%E7%A7%91%E6%96%AF%E8%8C%83%E5%BC%8F" target="_blank" rel="external">BNF</a>是一种描述<a href="https://zh.wikipedia.org/wiki/%E4%B8%8A%E4%B8%8B%E6%96%87%E6%97%A0%E5%85%B3%E6%96%87%E6%B3%95" target="_blank" rel="external">上下文无关文法</a>的语言，而上下文无关文法描述了一类形式语言。</p>
+<a id="more"></a>
+<h2 id="ABNF有什么用？"><a href="#ABNF有什么用？" class="headerlink" title="ABNF有什么用？"></a>ABNF有什么用？</h2><p>说到ABNF，第一反应可能很多人跟我一样，这又是什么鬼玩意儿？我也是最近在阅读<a href="https://httpwg.github.io/specs/rfc7230.html" target="_blank" rel="external">RFC7230</a>的时候才发现有这么个东西的，在阅读了<a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">相关文档(RFC5234)</a>过后，才发现其实我们很早以前就已经接触了ABNF，或者至少BNF，它是无所不在的(后来再一想，其实在上学时早就学过了，你懂的~)。现在，几乎每一位新编程语言书籍的作者都使用巴科斯范式来定义编程语言的语法规则。 </p>
+<p>譬如：我们在学习git的时候，git命名的定义形式便是用BNF描述的：</p>
+<pre><code>git commit [-a | --interactive | --patch] [-s] [-v] [-u&lt;mode&gt;] [--amend]
+       [--dry-run] [(-c | -C | --fixup | --squash) &lt;commit&gt;]
+       [-F &lt;file&gt; | -m &lt;msg&gt;] [--reset-author] [--allow-empty]
+       [--allow-empty-message] [--no-verify] [-e] [--author=&lt;author&gt;]
+       [--date=&lt;date&gt;] [--cleanup=&lt;mode&gt;] [--[no-]status]
+       [-i | -o] [-S[&lt;keyid&gt;]] [--] [&lt;file&gt;…]
+</code></pre><p>又或者，http协议的语法描述：</p>
+<pre><code>http-URI = &quot;http:&quot; &quot;//&quot; authority path-abempty [ &quot;?&quot; query ]
+         [ &quot;#&quot; fragment ]
+
+HTTP-message   = start-line
+               *( header-field CRLF )
+               CRLF
+               [ message-body ]
+</code></pre><p>又或者，我们可以用ABNF来描述一个for循环</p>
+<pre><code>FOR_STATEMENT ::= 
+      &quot;for&quot; &quot;(&quot; ( variable_declaration | 
+  ( expression &quot;;&quot; ) | &quot;;&quot; ) 
+      [ expression ] &quot;;&quot; 
+      [ expression ] &quot;;&quot; 
+      &quot;)&quot; statement
+</code></pre><p>所以，即便我们不自己写ABNF规则来定义语言，那么为了方便地阅读各种文档，也应该对其规则有所了解。</p>
+<h2 id="规则定义"><a href="#规则定义" class="headerlink" title="规则定义"></a>规则定义</h2><h3 id="1-规则命名-Rule-Naming"><a href="#1-规则命名-Rule-Naming" class="headerlink" title="1. 规则命名(Rule Naming)"></a>1. 规则命名(Rule Naming)</h3><p> ABNF中规则的名字是不区分大小写的，所以<code>&lt;rule&gt;，&lt;rulE&gt;，&lt;RULE&gt;</code>是一样的。 </p>
+<h3 id="2-规则形式-Rule-Form"><a href="#2-规则形式-Rule-Form" class="headerlink" title="2. 规则形式(Rule Form)"></a>2. 规则形式(Rule Form)</h3><p>规则的定义通常是如下形式:</p>
+<pre><code>    name = elements CR LF
+</code></pre><p>其中<code>name</code>是规则的名字，<code>elements</code>是一个或多个规则名或者终止描述符， <code>CR LF</code>是换行标识符。<br>For visual ease, rule definitions are left aligned.  When a rule requires multiple lines, the continuation lines are indented. The left alignment and indentation are relative to the first lines of the ABNF rules and need not match the left margin of the document.</p>
+<h2 id="3-终止符-Terminal-Value"><a href="#3-终止符-Terminal-Value" class="headerlink" title="3. 终止符 (Terminal Value)"></a>3. 终止符 (Terminal Value)</h2><p>在ABNF中，终止符指一个或多个数字字符，其中字符都是非负整数。 </p>
+<p>数字字符可以指定<code>%+基数(譬如：b=二进制；d=十进制；x=十六进制)</code>的形式，用<code>.</code>来进行数字的串联。譬如：回车的十进制为<code>%d13</code>, 十六进制为<code>%x0D</code>,回车加换行为<code>%d13.10</code></p>
+<p>ANBF也允许指定文本，用双引号括起来即可，但文本内容是不区分大小写的。所以 <code>rulename=&quot;abc&quot;</code>和<code>rulename=&quot;ABC&quot;</code>是一样的。</p>
+<h3 id="4-操作符-Operator"><a href="#4-操作符-Operator" class="headerlink" title="4. 操作符(Operator)"></a>4. 操作符(Operator)</h3><h4 id="4-1-Concatenation-Rule1-Rule2"><a href="#4-1-Concatenation-Rule1-Rule2" class="headerlink" title="4.1 Concatenation: Rule1 Rule2"></a>4.1 Concatenation: <code>Rule1 Rule2</code></h4><pre><code>foo = %x61   ;a
+bar = %x62   ;b
+mumble = foo bar foo
+; 于是mumble就可以匹配字符“aba”
+</code></pre><h4 id="4-2-Alternatives-Rule1-Rule2"><a href="#4-2-Alternatives-Rule1-Rule2" class="headerlink" title="4.2 Alternatives: Rule1/ Rule2"></a>4.2 Alternatives: <code>Rule1/ Rule2</code></h4><pre><code>foo / bar
+will accept &lt;foo&gt; or &lt;bar&gt;
+</code></pre><h4 id="4-3-Incremental-Alternatives-Rule1-Rule2"><a href="#4-3-Incremental-Alternatives-Rule1-Rule2" class="headerlink" title="4.3 Incremental Alternatives: Rule1 =/ Rule2"></a>4.3 Incremental Alternatives: <code>Rule1 =/ Rule2</code></h4><pre><code>rule = alt1 /alt2 /alt3         ;支持多种选项
+</code></pre><h4 id="4-4-Value-Range-Alternatives-c"><a href="#4-4-Value-Range-Alternatives-c" class="headerlink" title="4.4 Value Range Alternatives: %c##-##"></a>4.4 Value Range Alternatives: <code>%c##-##</code></h4><pre><code>DIGIT = %x30-39
+is equivalent to:
+DIGIT = &quot;0&quot;/&quot;1&quot;/&quot;2&quot;..../&quot;9&quot;
+</code></pre><h4 id="4-5-Sequence-Group-Rule1-Rule2-将小括号括起来的多个规则当成一个规则"><a href="#4-5-Sequence-Group-Rule1-Rule2-将小括号括起来的多个规则当成一个规则" class="headerlink" title="4.5 Sequence Group: (Rule1 Rule2), 将小括号括起来的多个规则当成一个规则"></a>4.5 Sequence Group: <code>(Rule1 Rule2)</code>, 将小括号括起来的多个规则当成一个规则</h4><pre><code>elem (foo / bar) blat
+</code></pre><h4 id="4-6-Variable-Repetition-lt-a-gt-lt-b-gt-Rule"><a href="#4-6-Variable-Repetition-lt-a-gt-lt-b-gt-Rule" class="headerlink" title="4.6 Variable Repetition: &lt;a&gt;*&lt;b&gt;Rule"></a>4.6 Variable Repetition: <code>&lt;a&gt;*&lt;b&gt;Rule</code></h4><p>在元素前加<code>*</code>指示该规则重复使用，完整的形式是：</p>
+<pre><code>&lt;a&gt;*&lt;b&gt;element   ; a和b都是十进制数字，表示至少a次，至多b次重复
+*element         ; 默认值0到infinity，表示重复0次或者无限次
+1*element        ; at least once
+3*3element       ; exactly 3 times
+</code></pre><h4 id="4-7-Specific-Repetion-nRule"><a href="#4-7-Specific-Repetion-nRule" class="headerlink" title="4.7 Specific Repetion: nRule"></a>4.7 Specific Repetion: <code>nRule</code></h4><pre><code>&lt;n&gt;element      ;n times repetion
+equivalent with
+&lt;n&gt;*&lt;n&gt;element
+</code></pre><h4 id="4-8-Optional-Sequence-Rule"><a href="#4-8-Optional-Sequence-Rule" class="headerlink" title="4.8 Optional Sequence: [Rule]"></a>4.8 Optional Sequence: <code>[Rule]</code></h4><pre><code>[foo bar]
+equivalent with:
+*1(foo bar)
+</code></pre><h4 id="4-9-Comment-Comment"><a href="#4-9-Comment-Comment" class="headerlink" title="4.9 Comment: ;Comment"></a>4.9 Comment: <code>;Comment</code></h4><p>ANBF使用semicolon作为注释的起始，换行作为注释的终止</p>
+<h4 id="4-10-Operator-Precedence"><a href="#4-10-Operator-Precedence" class="headerlink" title="4.10 Operator Precedence"></a>4.10 Operator Precedence</h4><p>操作符的优先级，如下所示：</p>
+<pre><code>Rule name = prose-val = Terminal value &gt; Comment &gt; Value range
+&gt; Repetion &gt; Grouping = Optional &gt; Concatenation &gt; Alternative
+</code></pre><h2 id="核心规则-Core-Rule"><a href="#核心规则-Core-Rule" class="headerlink" title="核心规则(Core Rule)"></a>核心规则(Core Rule)</h2><p>所谓核心规则，指的是一些用大写字符组成的ABNF<code>内置规则</code>，相当于对一些常用规则的封装。我把它们从<a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">RFC5234</a>中搬到了下面。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Rule Name</th>
+<th style="text-align:right">Value</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CR</td>
+<td style="text-align:right">%x0D</td>
+<td style="text-align:center">Carriage return(回车)</td>
+</tr>
+<tr>
+<td style="text-align:left">CRLF</td>
+<td style="text-align:right">%x0D</td>
+<td style="text-align:center">Internet standard new line</td>
+</tr>
+<tr>
+<td style="text-align:left">CTL</td>
+<td style="text-align:right">%x00-%x1F/%x7F</td>
+<td style="text-align:center">Controls, ASCII中的控制符</td>
+</tr>
+<tr>
+<td style="text-align:left">DIGIT</td>
+<td style="text-align:right">%x30-%x39</td>
+<td style="text-align:center">0~9</td>
+</tr>
+<tr>
+<td style="text-align:left">DQUOTE</td>
+<td style="text-align:right">%x22</td>
+<td style="text-align:center"><code>&quot;</code>,双引号</td>
+</tr>
+<tr>
+<td style="text-align:left">HEXDIG</td>
+<td style="text-align:right">DIGIT/“A”/“B”/“C”/“D”/“E”/“F”</td>
+<td style="text-align:center">十六进制字符</td>
+</tr>
+<tr>
+<td style="text-align:left">HTAB</td>
+<td style="text-align:right">%x09</td>
+<td style="text-align:center">水平TAB，就是tab键啦</td>
+</tr>
+<tr>
+<td style="text-align:left">LF</td>
+<td style="text-align:right">%x0A</td>
+<td style="text-align:center">换行</td>
+</tr>
+<tr>
+<td style="text-align:left">LWSP</td>
+<td style="text-align:right">*(WSP / CRLF WSP)</td>
+<td style="text-align:center">线性空白</td>
+</tr>
+<tr>
+<td style="text-align:left">OCTET</td>
+<td style="text-align:right">%x00-FF</td>
+<td style="text-align:center">8bit数据</td>
+</tr>
+<tr>
+<td style="text-align:left">SP</td>
+<td style="text-align:right">%x20</td>
+<td style="text-align:center">空格</td>
+</tr>
+<tr>
+<td style="text-align:left">VCHAR</td>
+<td style="text-align:right">%x21-7E</td>
+<td style="text-align:center">可以打印的字符</td>
+</tr>
+<tr>
+<td style="text-align:left">WSP</td>
+<td style="text-align:right">SP / HTAB</td>
+<td style="text-align:center">空白</td>
+</tr>
+</tbody>
+</table>
+<p>下面附一个网上下的ASCII码表：</p>
+<p><img src="./images/ascii.jpg" alt="Alt text"></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">RFC5234</a></li>
+<li><a href="http://kb.cnblogs.com/page/189566/" target="_blank" rel="external">语法规范:BNF与ABNF</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[ES5 Strict Mode]]></title>
+      <url>http://blog.dzyhenry.com/2016/01/05/es5_strict_mode/</url>
+      <content type="html"><![CDATA[<h2 id="关于严格模式-Strict-Mode"><a href="#关于严格模式-Strict-Mode" class="headerlink" title="关于严格模式(Strict Mode)"></a>关于严格模式(Strict Mode)</h2><p>我们知道<a href="http://www.zhihu.com/question/24715618" target="_blank" rel="external">ES4</a>过于激进，最终由于没有得到浏览器厂商广泛的支持而不了了之。ES5走的路线相对温和，相对于ES3，除了对象和属性的改造(<a href="http://ejohn.org/blog/ecmascript-5-objects-and-properties/" target="_blank" rel="external">Object/Property</a>)以及JSON引入，并没有太多变化，一些更新的语法和特性留给了下一代ECMAScript版本——ES6 aka Harmony。于是，我们可以说ES5仅仅是在ES3的基础上增加了一些特性。</p>
+<a id="more"></a>
+<p>与此同时，ES3中的某些特性被认为是有错误倾向(error-prone)、不安全(not enough secure)、不易调试检错(poor error checking)的，且有一些特性将要在下一代ECMAScript版本中被废弃的。所以从这个角度上来说，ES5其实是一个过渡性的标准。</p>
+<p>ES5一方面需要兼容ES3，另一方面又需要引导开发者向ES6过渡，于是定义了strict variant或者strict mode。在严格模式(strict mode)中：</p>
+<ol>
+<li>去除了一些ES3中不推荐使用的语法和语义特性，并更新了一些特性的具体语义。</li>
+<li>为了帮助开发者编写更加健壮的代码和更方便地调试代码，某些普通模式下并不会抛异常报错的情形会执行更严格的标准而报错。</li>
+</ol>
+<p>所以，为了写出更健壮更安全的JavaScript代码，<a href="http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/" target="_blank" rel="external">John Resig</a>和<a href="https://www.nczonline.net/blog/2012/03/13/its-time-to-start-using-javascript-strict-mode/" target="_blank" rel="external">NCZ</a>大神也推荐使用严格模式。</p>
+<p><strong>注意</strong></p>
+<blockquote>
+<p>ECMAScript 5的严格模式是JavaScript中的一种限制性更强的变种方式。严格模式不是一个子集：它在语义上与正常代码有着明显的差异。</p>
+</blockquote>
+<p>目前以下浏览器已经支持ES5的strict mode</p>
+<p><img src="./images/es5_strict_mode.png" width="800px" alt="line-box" title="line-box"></p>
+<h2 id="开启严格模式"><a href="#开启严格模式" class="headerlink" title="开启严格模式"></a>开启严格模式</h2><p>开启严格模式有两种方式，分别是在script标签范围内和function范围内。</p>
+<pre><code>- script标签内
+
+    &lt;script&gt;
+        &#39;use strict&#39;;
+        //strict mode code comes here
+    &lt;/script&gt;
+
+    &lt;script&gt;
+        // nomral mode code comes here
+    &lt;/script&gt;
+</code></pre><p>上面的代码出现在同一个文件里面的时候，前一个标签是严格模式，而后一个不是。</p>
+<pre><code>- function内 
+
+    function () {
+        &#39;use strict&#39;;
+        // strict mode code comes here
+    }
+
+- 模块化写法(使用IIFE)
+
+    (function () {
+       &#39;use strict&#39;; 
+       // strict mode code comes here
+    })()
+</code></pre><h2 id="严格模式与普通模式的不同"><a href="#严格模式与普通模式的不同" class="headerlink" title="严格模式与普通模式的不同"></a>严格模式与普通模式的不同</h2><p>下面我们看一下具体有哪些方面的差异：</p>
+<ol>
+<li><p>保留字设定，在strict mode中，新增了保留字：<code>implements, interface, let, package, private, protected, public, static, yield</code>。</p>
+<pre><code> &#39;use strict;&#39;
+ var let = 12; // Syntax Error.
+</code></pre></li>
+<li><p>全局变量必须显示声明</p>
+<pre><code> &#39;use strict&#39;;
+ i = 12; // SyntaxError;
+</code></pre></li>
+<li><p>禁用with</p>
+<pre><code> &#39;use strict&#39;
+ with(x) {  // 抛出异常
+     v = 2;
+ }
+</code></pre></li>
+<li><p>eval作用域。正常模式下，eval语句的作用域，取决于它处于全局作用域还是函数作用域，在严格模式下，在eval()中执行的变量和函数申明不会直接在当前作用域中创建相应变量或函数。另外，<code>eval</code>不能作为函数的参数。(下面这个例子来自<a href="https://www.nczonline.net/blog/2012/03/13/its-time-to-start-using-javascript-strict-mode/" target="_blank" rel="external">NCZ</a>)</p>
+<pre><code> (function() {
+     eval(&quot;var x = 10;&quot;);
+     // Non-strict mode, alerts 10
+     // Strict mode, throws an error because x is undeclared
+     alert(x);
+ }());
+</code></pre></li>
+<li><p>禁止值为<code>null</code>或<code>undefined</code>的<code>this</code>关键字指向全局变量: 对<code>this</code>值为<code>null</code>或<code>undefined</code>的时候，不再让<code>this</code>指向全局变量。因此在使用构造函数时，如果忘了加<code>new</code>关键字，将报错。</p>
+<pre><code> &#39;use strict&#39;
+ function f() {
+     &#39;use strict&#39;;
+     this.a = 12;
+ }
+ f(); //Syntax Error, this is undefined.
+</code></pre></li>
+<li><p>重名错误(No duplicates)</p>
+<ul>
+<li><p>正常模式下，如果对象有多个重名属性，最后赋值的那个属性会覆盖前面的值。严格模式下，这属于语法错误。</p>
+<pre><code>  &#39;use strict&#39;;
+  var obj = {
+      foo: &#39;12&#39;,
+      foo: 12 // Error
+  }; 
+</code></pre></li>
+<li><p>正常模式下，如果函数有多个重名的参数，可以用arguments[i]读取。严格模式下，这属于语法错误。</p>
+<pre><code>  &#39;use strict&#39;;
+  function f(a, b, a) { // Error
+
+  }
+</code></pre></li>
+</ul>
+</li>
+<li><p>任何在正常模式下引起静默失败的赋值操作 (给不可写属性赋值, 给只读属性(getter-only)赋值赋值, 给不可扩展对象(non-extensible object)的新属性赋值) 在严格模式下都会抛出异常。</p>
+<pre><code> var person = {};
+ Object.defineProperty(person, &quot;name&quot;, {
+     writable: false,
+     value: &quot;Nicholas&quot;
+ });
+ // Fails silently in non-strict mode, throws error in strict mode
+ person.name = &quot;John&quot;;
+
+ // This is another example of delete property
+ &quot;use strict&quot;;
+ var x;
+ delete x; // 语法错误
+ var o = Object.create(null, {&#39;x&#39;: {
+     value: 1,
+     configurable: true
+ }});
+ delete o.x; // 删除成功
+</code></pre></li>
+<li><p>禁止八进制表示法</p>
+<pre><code> &#39;use strict&#39;;
+ var n = 0100; // Octal literals are not allowed in strict mode.
+</code></pre></li>
+<li><p>arguments对象</p>
+<ul>
+<li><p>不允许对arguments赋值</p>
+<pre><code>  &#39;use strict;&#39;
+  var arguments = 12; //Unexpected eval or arguments in strict mode
+</code></pre></li>
+<li><p>arguments对象的<code>callee</code>和<code>caller</code>属性被去除，这意味着，你无法在匿名函数内部调用自身了。</p>
+<pre><code>  &#39;use strict&#39;
+  var f = function () {
+      return arguments.callee;
+  }
+  f();  // caller&#39;, &#39;callee&#39;, and &#39;arguments&#39; properties may not be accessed on strict mode functions or the arguments objects for calls to them
+</code></pre></li>
+<li><p>arguments不再追踪参数的变化</p>
+<pre><code>  function f(a) {
+      a = 2;
+      return [a, arguments[0]];
+  }
+  f(1); // 正常模式为[2,2]
+  function f(a) {
+  &quot;use strict&quot;;
+      a = 2;
+      return [a, arguments[0]];
+  }
+  f(1); // 严格模式为[2,1]
+</code></pre></li>
+<li><p>arguments和eval都不能作函数的参数</p>
+<pre><code>  &#39;use strict&#39;;
+  function (eval, arguments) { // Error
+      // some code
+  }
+</code></pre></li>
+</ul>
+</li>
+<li><p>函数必须声明在顶层，将来Javascript的新版本会引入”块级作用域”。为了与新版本接轨，严格模式只允许在全局作用域或函数作用域的顶层声明函数。也就是说，不允许在非函数的代码块内声明函数。</p>
+<pre><code>&quot;use strict&quot;;
+if (true) {
+    function f1() { }
+}
+for (var i = 0; i &lt; 5; i++) {
+    function f2() { }
+}
+f1(); // Reference Error, f1 is not defined.
+f2(); // Reference Error, f2 is not defined.
+</code></pre></li>
+</ol>
+<p>虽然ES6如今已是大势所趋，但ES5仍然占据主流，旧有项目的维护仍然需要ES5，在这个承上启下的阶段，ES5的严格模式需要得到格外关注。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://www.nczonline.net/blog/2012/03/13/its-time-to-start-using-javascript-strict-mode/" target="_blank" rel="external">It’s time to start using JavaScript strict mode, NCZ Online</a></li>
+<li><a href="http://dmitrysoshnikov.com/ecmascript/es5-chapter-2-strict-mode/" target="_blank" rel="external">ECMA-262-5 in detail. Chapter 2. Strict Mode. </a></li>
+<li><a href="http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/" target="_blank" rel="external">ECMAScript 5 Strict Mode, JSON and More</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode" target="_blank" rel="external">Strict Mode, MDN</a></li>
+<li><a href="http://www.ruanyifeng.com/blog/2013/01/javascript_strict_mode.html" target="_blank" rel="external">JavaScript严格模式详解，阮一峰</a></li>
+<li><a href="http://java-script.limewebs.com/strictMode/test_hosted.html" target="_blank" rel="external">Douglas Crockford, Stric Mode Is Coming  To Town</a></li>
+<li><a href="http://yanhaijing.com/es5/#638" target="_blank" rel="external">ECMAScript 5, 附录C ECMAScript的严格模式</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[HTTP method and status]]></title>
+      <url>http://blog.dzyhenry.com/2015/12/28/http_method_and_status/</url>
+      <content type="html"><![CDATA[<h2 id="关于"><a href="#关于" class="headerlink" title="关于"></a>关于</h2><p>http协议对于web开发的重要性当然不言而喻，本文所记录的是http协议中的method和比较常用的status。<br><a id="more"></a></p>
+<h2 id="HTTP-method"><a href="#HTTP-method" class="headerlink" title="HTTP method"></a>HTTP method</h2><ol>
+<li>GET  请求指定页面的信息，并返回实体主体</li>
+<li>HEAD  类似于GET请求，但返回的响应中只有返回头，没有具体的内容</li>
+<li>PUT 从客户端向服务器端传送的数据取代指定的内容（更新资源）</li>
+<li>POST 向指定资源提交数据进行请求处理（例如提交表单或上传文件）。数据被包含在请求体中。POST请求可能会导致新的资源的建立和/或已有资源的修改。</li>
+<li>DELETE 请求服务器删除指定资源</li>
+<li>CONNECT HTTP/1.1协议中预留给能够将连接改为管道方式的代理服务器</li>
+<li>OPTIONS 允许客户端查看服务器的性能</li>
+</ol>
+<h2 id="HTTP-Status"><a href="#HTTP-Status" class="headerlink" title="HTTP Status"></a>HTTP Status</h2><ol>
+<li><p>Information 1xx</p>
+<ul>
+<li><code>100 Continue.</code> The client SHOULD continue with its request.</li>
+<li><code>101 Switching Protocols.</code></li>
+</ul>
+</li>
+<li><p>Successful 2xx</p>
+<ul>
+<li><code>200 OK.</code> The request has succeed.</li>
+<li><code>201 Created.</code> The request has been fulfilled and resulted in a new resource being created.</li>
+<li><code>202 Accepted.</code> The request has beening accepted for processing, but the processing has not been completed.</li>
+<li><code>203 Not-Authoritative Information.</code> The returned metainformation in the entity-header is not the definitive set as available from the origin server, but is gathered from a local or a third-party copy.</li>
+<li><code>204 No Content.</code> The server has fulfilled the request but does not need to return an entity-body, and might want to return updated metainformation.</li>
+<li><code>205 Reset Content.</code> The server has fulfilled the request and the user agent SHOULD reset the document view which caused the request to be sent. The responst MUST NOT include an entity.</li>
+<li><code>206 Partial Content.</code> The server has fulfilled the partial GET request for the resource. The request MUST have included a Range header field indicating the desired range.</li>
+</ul>
+</li>
+<li><p>Redirection 3xx</p>
+<ul>
+<li><code>300 Multiple Choices.</code> The requested resource corresponds to any one of a set of representations, each with its own specific location, and agent-driven negotiation information is being provided so that the user can select a preferred representation and redirect its request to that location.</li>
+<li><code>301 Moved Permanently.</code> The requested resource has been assigned a new permanent URI and any future references to this resource SHOULD use one of the returned URIs.</li>
+<li><code>302 Found.(Moved temporarily)</code> The requested resource resides temporarily under a different URI.</li>
+<li><code>303 See Other.</code> The response to the request can be found under a different URI and SHOULD be retrieved using a GET method on that resource.</li>
+<li><code>304 Not Modified</code> If the client has performed a conditional GET request and access is allowed, but the document has not been modified, the server SHOULD respond with this status code.</li>
+<li><code>305 Use Proxy</code> The requested resource MUST be accessed through the proxy given by the location field.</li>
+<li><code>306 Unused</code> The 306 status code was userd in a previous version of the specification, is no longer used, and the code is reserved.</li>
+<li><code>307 Temporary Redirect</code> The requested resource resides temporarily under a different URI.</li>
+</ul>
+</li>
+<li><p>Client Error 4xx</p>
+<ul>
+<li><code>400 Bad Request</code> The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modification.</li>
+<li><code>401 Unauthorized</code> The request requires user authentication.</li>
+<li><code>402 Payment Required</code> The code is reserved for future used.</li>
+<li><code>403 Forbbiden</code> The server understood the request, but is refusing to fulfill it. Authentication will not help and the request SHOULD NOT be repeated.</li>
+<li><code>404 Not Found</code></li>
+<li><code>405 Method Not Allowed</code> The method specified in the Request-Line is not allowed for the resource identified by the Request-URI.</li>
+<li><code>406 Not Acceptable</code> The resource identified by the request is only capable of generating response entities which have content characteristics not acceptable according to the accept headers sent in the request.</li>
+<li><code>407 Proxy Authentication Required</code> This code is similar to 401(Unauthorized), but indicates that the client must first authenticate itself with the proxy.</li>
+<li><code>408 Request Timeout</code> The client did ont produce a request within the time that the server was prepared to wait. The client MAY repeat the request without modifications at any later time.</li>
+<li>……</li>
+</ul>
+</li>
+<li><p>Server Error 5xx</p>
+<ul>
+<li><code>500 Internal Server Error</code> The server encoutered an unexpected condition which prevented it from fulfilling the request.</li>
+<li><code>501 Not Implemented</code> The server does not support the functionality required to fulfill the request. This is the appropriate response when the server does not recognize the request method and is not capable of supporting it for any resource.</li>
+<li><code>502 Bad Gateway</code> The server, while acting as a gateway or proxy, received an invalid response from the upstream server it accessed in attempting to fulfill the request.</li>
+<li><code>503 Service Unavailable</code> The server is currently unable to handle the request due to a temporary ovloading or maintenance of the server.</li>
+<li><code>504 Gateway Timeout</code> The server, while acting as a gateway or proxy, did not receive a timely response from the upstream server specified by the URI or some other auxiliary server(e.g.DNS)it needed to access in attempting to complete the request.</li>
+<li><code>505 HTTP Version Not Supported</code> The server does not support, or refuses to support, the HTTP protocol version that was used in the request message.</li>
+</ul>
+</li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html" target="_blank" rel="external">www.w3.org Method Definition</a></li>
+<li><a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html" target="_blank" rel="external">www.w3.org Status Code Definitions</a> </li>
+<li><a href="http://httpstatus.es/" target="_blank" rel="external">httpstaus.es</a></li>
+<li><a href="http://racksburg.com/choosing-an-http-status-code/" target="_blank" rel="external">Choosing an HTTP Status Code — Stop Making It Hard</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[代理服务器]]></title>
+      <url>http://blog.dzyhenry.com/2015/12/01/proxy_server/</url>
+      <content type="html"><![CDATA[<h2 id="什么是代理服务器？"><a href="#什么是代理服务器？" class="headerlink" title="什么是代理服务器？"></a>什么是代理服务器？</h2><blockquote>
+<p>在计算机网络中，代理服务器就是在发送请求的客户端和寻找资源的服务器端之间扮演者中介角色的服务器(计算机系统或者应用)。<br>——<a href="https://en.wikipedia.org/wiki/Proxy_server" target="_blank" rel="external">维基百科</a></p>
+</blockquote>
+<p>简单讲，就是当客户端A向服务器A请求某个资源的时候，服务器A认为该资源需要其他服务器(例如：服务器B)提供的服务来完成，于是服务器A就连接服务器B获取客户端A请求的资源并返回，此时服务器A扮演的角色就是服务器B代理服务器。当然，考虑到效率，并不是每次来自客户端的请求，代理服务器都会向目标服务器发出请求，代理服务器通常有一定的缓存策略。在有些情况下，代理服务器处于某些目的会对目标服务器返回的资源进行一定的处理。</p>
+<a id="more"></a>
+<p>下图形象地展现了一个代理服务器扮演的角色</p>
+<p><img src="./images/proxy.png" width="400px" alt="proxy_server" title="代理服务器"></p>
+<p>上图中的Alice和Bob之间通过红色的Proxy实现通信，Bob并不知道他发送的信息将要传送到哪里去，这也是代理服务器能够用来保护隐私的原因。</p>
+<h2 id="代理服务器的类型？"><a href="#代理服务器的类型？" class="headerlink" title="代理服务器的类型？"></a>代理服务器的类型？</h2><ul>
+<li><p>网关代理(<a href="https://en.wikipedia.org/wiki/Proxy_server#Types_of_proxy" target="_blank" rel="external">Gateway Proxy</a>), 对资源的请求和响应不做改动的代理服务器通常叫做网关代理，或者叫做隧道代理(tunneling proxy)。</p>
+</li>
+<li><p>前向代理(<a href="https://en.wikipedia.org/wiki/Proxy_server#Types_of_proxy" target="_blank" rel="external">Forward Proxy</a>)，前向代理是一个面向Internet的代理，它用于从一个非常广泛的范围（通常是整个Internet）中去获取资源，<code>前向代理</code>扮演的是与客户端紧密关联的中介，用于去访问任何远程服务器。如下图所示，为前向代理。<br><img src="./images/forward_proxy.png" width="400px" alt="forward_proxy" title=""></p>
+</li>
+<li><p>反向代理(<a href="https://en.wikipedia.org/wiki/Reverse_proxy" target="_blank" rel="external">Reverse Proxy</a>)，反向代理通常是面向内部的代理，用于控制和保护在私有网络中对于服务器端的访问。反向代理通常用于处理负载均衡、登陆认证、加密或者缓存等应用场景。反向代理与前向代理恰好相反，它通常扮演的角色是与被访问的服务器紧密关联的中介。</p>
+<p><img src="./images/reverse_proxy.png" width="400px" alt="reverse_proxy" title=""></p>
+</li>
+</ul>
+<h2 id="代理服务器的应用"><a href="#代理服务器的应用" class="headerlink" title="代理服务器的应用"></a>代理服务器的应用</h2><p>代理服务器的应用十分广泛</p>
+<ul>
+<li>在校园网中应用的内容控制代理(Content-control Proxy)</li>
+<li>规避过滤和审查的代理服务器(Bypassing filters and censorship)</li>
+<li>提高性能，用代理服务器作缓存</li>
+<li>反向代理，大型web应用负载均衡</li>
+<li>匿名访问远程服务，保护隐私</li>
+</ul>
+<h2 id="代理服务器的实现"><a href="#代理服务器的实现" class="headerlink" title="代理服务器的实现"></a>代理服务器的实现</h2><p>根据代理服务器代理资源和实现的功能，代理服务器有一下几种常见的<a href="https://en.wikipedia.org/wiki/Proxy_server" target="_blank" rel="external">实现方式</a>：</p>
+<ul>
+<li>Web Proxy</li>
+<li>Socket Proxy</li>
+<li>Trasparent Proxy</li>
+<li>CGI proxy</li>
+<li>Suffix proxy</li>
+<li>I2P anonymous proxy</li>
+<li>DNS Proxy</li>
+</ul>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://en.wikipedia.org/wiki/Proxy_server" target="_blank" rel="external">Wikipedia Proxy Server</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Reverse_proxy" target="_blank" rel="external">Wikipedia Reverse Proxy</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[CSS2.1中的视觉格式化模型与浮动]]></title>
+      <url>http://blog.dzyhenry.com/2015/11/26/css_visual_formatting_model_and_float/</url>
+      <content type="html"><![CDATA[<p>CSS中的浮动（float）我觉得可能是CSS中最常见却又最难以把握的一部分了，也许到现在我仍然没有完全将其把握。今天看了两篇不错的文章<a href="http://www.zhangxinxu.com/wordpress/2010/01/css-float%E6%B5%AE%E5%8A%A8%E7%9A%84%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6%E3%80%81%E8%AF%A6%E8%A7%A3%E5%8F%8A%E6%8B%93%E5%B1%95%E4%B8%80/" target="_blank" rel="external">《CSS float浮动的深入研究、详解及拓展》</a>、<a href="http://www.iyunlu.com/view/css-xhtml/55.html" target="_blank" rel="external">那些年我们一起清除过的浮动</a>，深受启发，自己也整理了一下。<br><a id="more"></a> </p>
+<p>要理解CSS中的浮动，首先你得明白一些CSS中的基本概念。下面这些内容大部分是我从<a href="http://www.w3.org/TR/CSS21/visudet.html#containing-block-details" target="_blank" rel="external">W3C</a>规范中经过一定理解翻译过来的，关键概念都附有原文链接。阅读本文遇到难以理解的地方，建议直接阅读W3C的规范，因为本文只是该规范的搬运工而已，有些地方难免有差错。</p>
+<p>讲到浮动，不得不提到视觉格式化模型(<a href="http://www.w3.org/TR/CSS21/visuren.html#visual-model-intro" target="_blank" rel="external">visual formatting model</a>)。所谓视觉格式化模型就是规定用户代理(通常是浏览器)在不同媒体类型(不同尺寸的屏幕、打印机等内容呈现的载体)中处理文档树的方式。规范上的原话翻译过来比较生硬，用白话讲就是：视觉格式模型规定浏览器如何对文档树中的元素进行布局。</p>
+<p>在视觉格式化模型中，文档树中的所有元素都会根据对应的盒模型(box model)生成0个或多个盒子(boxes)，而这些盒子的布局是由以下几点决定的：</p>
+<ul>
+<li>盒模型的维度(<a href="http://www.w3.org/TR/CSS21/box.html#box-dimensions" target="_blank" rel="external">box dimensions</a>)以及元素的类型(<a href="http://www.w3.org/TR/CSS21/visuren.html#box-gen" target="_blank" rel="external">type</a>)。所谓盒模型的维度，指的是盒模型的<code>margin,padding,width,height</code>，它们决定了元素所占的空间；元素的类型，指的是<code>display</code>属性规定的元素类型，例如：<code>block、inline、inline-block、run-in等</code>。</li>
+<li>布局策略(<a href="http://www.w3.org/TR/CSS21/visuren.html#positioning-scheme" target="_blank" rel="external">positioning scheme</a>)。包括普通流(<a href="http://www.w3.org/TR/CSS21/visuren.html#normal-flow" target="_blank" rel="external">normal flow</a>)，浮动(<a href="http://www.w3.org/TR/CSS21/visuren.html#floats" target="_blank" rel="external">float</a>)，以及绝对定位(<a href="http://www.w3.org/TR/CSS21/visuren.html#absolute-positioning" target="_blank" rel="external">absolute positioning</a>)</li>
+<li>文档树中元素之间的关系。</li>
+<li>外部信息(external information)。比如浏览器视窗的尺寸、图片自身的尺寸等。</li>
+</ul>
+<p>前面讲过，在视觉格式化模型中，所有的元素都会生成相应的盒模型(block model)。在CSS2.1中，有三种盒模型：<code>block box、line box、 run-in box</code>。块级元素(<a href="http://www.w3.org/TR/CSS21/visuren.html#block-boxes" target="_blank" rel="external">Block-level elements</a>)生成块框(block box)；行内元素生成行框(line box)；而<code>run-in box</code>由后续的盒模型的类型决定其是块框还是行框。</p>
+<p>有了以上信息，我们大致能猜到文档树中的元素是怎么在浏览器中布局的。首先每个元素都有自己的类型和维度，这决定了单个元素自身所占的空间；然后根据不同的布局策略将所有元素在浏览器的画布上进行布局；元素间的关系则是从另一个方面来影响各个元素之间的位置关系；外部信息自然也会影响元素的布局，比如两个元素本来是在一排并排放置的，当浏览器视窗变窄，这两个元素就有可能分成两排放置了。</p>
+<p>关于盒模型的维度、文档树中各元素的关系以及外部信息理解起来比较容易，不是本文的重点。接下来，我们将重点看看CSS视觉格式化模型中的布局策略(<a href="http://www.w3.org/TR/CSS21/visuren.html#positioning-scheme" target="_blank" rel="external">positioning scheme</a>)。</p>
+<h2 id="Normal-flow"><a href="#Normal-flow" class="headerlink" title="Normal flow"></a>Normal flow</h2><p>普通流中有三个重要的概念:</p>
+<ul>
+<li>块级格式化上下文(<a href="http://www.w3.org/TR/CSS21/visuren.html#block-formatting" target="_blank" rel="external">Block formatting context,简称BFC</a>)；</li>
+<li>行内格式化上下文(<a href="http://www.w3.org/TR/CSS21/visuren.html#inline-formatting" target="_blank" rel="external">Inline formatting context</a>)；</li>
+<li>相对定位(<a href="http://www.w3.org/TR/CSS21/visuren.html#relative-positioning" target="_blank" rel="external">Relative positioning</a>)</li>
+</ul>
+<p>说白了BFC就是用来放置文档元素的，通常指的是块级元素，满足以下任一条件都会生成块级格式化上下文(BFC)</p>
+<ul>
+<li>float元素</li>
+<li>绝对定位的元素，<code>position</code>值为<code>absolute</code>的元素</li>
+<li>非<code>block box</code>的<code>block container</code>，例如<code>display</code>值为<code>inline-block、table-cell、table-caption</code>的元素</li>
+<li><code>overflow</code>属性值不为<code>visible</code>的<code>block box</code></li>
+</ul>
+<p>BFC中的盒子的特点</p>
+<ul>
+<li>每个盒子独占一行，从包含块的顶部开始向下垂直分布</li>
+<li>每个盒子的left outer edge总是与包含块的左边界邻接 </li>
+<li>兄弟盒子（sibling boxes）间的垂直距离取决于margin属性。垂直方向上相邻的margin遵循margin collapse规则。</li>
+</ul>
+<p>Inline formatting contexts，行内格式化上下文涉及到两种盒子(boxes)：行框(line box)以及行内框(inline box)。每一个行内元素都会生成inline box，inline box水平排列，浏览器的一整行生成一个行框(line box)，所以一个行框(line box)可能包含多个行内框(inline box)。下图展示了行框和行内框的关系。</p>
+<p><img src="./images/line-box.png" width="400px" alt="line-box" title="line-box"></p>
+<p>上图中的行框(line box)包含了三个行内框(inline box)，其中左右两段文字都是匿名行内框，中间的图片是img元素的行内框。行框的宽度由该行的包含块和浮动元素的显示决定，行框的高度由行框中的行内框的高度和位置决定，高度的具体计算方式在<a href="http://www.w3.org/TR/CSS21/visudet.html#line-height" target="_blank" rel="external">这里</a>。</p>
+<p>Once a box has been laid out according to the normal flow or floated, it may be shifted relative to this position. This is called relative positioning. 相对定位(<a href="http://www.w3.org/TR/CSS21/visuren.html#relative-positioning" target="_blank" rel="external">Relative positioning</a>)的元素在普通流中所占的空间并不会相对定位元素的移动而改变。相对定位的元素位置的偏移是相对于其包含块(<a href="http://www.w3.org/TR/CSS21/visudet.html#containing-block-details" target="_blank" rel="external">containing block</a>)，有四种位置偏移<code>right、left、top、bottom</code>，具体细节本文不再赘述。</p>
+<h2 id="Float"><a href="#Float" class="headerlink" title="Float"></a>Float</h2><p>浮动(float)是相对于普通流(normal flow)的另一种布局策略(positioning scheme)。张鑫旭在他的文章<a href="http://www.zhangxinxu.com/wordpress/2010/01/css-float%E6%B5%AE%E5%8A%A8%E7%9A%84%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6%E3%80%81%E8%AF%A6%E8%A7%A3%E5%8F%8A%E6%8B%93%E5%B1%95%E4%B8%80/" target="_blank" rel="external">《CSS float浮动的深入研究、详解及拓展》</a>中讲到浮动出现的意义在于：“浮动出现的意义其实只是用来让文字环绕图片而已，仅此而已。”我表示同意。</p>
+<p>元素一旦浮动起来后，首先它的<code>display</code>属性会自动变成<code>block</code>；其次该元素在普通流(normal flow)中表现得没有“高度”。之所以为这里的“高度”加引号是因为在视觉上该元素依然是有高度的，但在普通流的文档布局中浮动元素的高度被忽略了，这也是当浮动框的高度超出包含块(<a href="http://www.w3.org/TR/CSS21/visudet.html#containing-block-details" target="_blank" rel="external">containing block</a>)的时候，也就会出现包含块(containing block)不会自动伸高来闭合浮动元素的原因。当包含块(containing block)中没有其他普通流元素时，就会出现包含块的高度为0情况，也就是所谓的包含块的高度塌陷。</p>
+<p>关于浮动的闭合</p>
+<ul>
+<li>浮动的闭合一般有两种方式<ul>
+<li>触发包含块创建BFC(Block formatting context)。设置包含块的属性为：<code>overflow:hiden</code>或者<code>display:table</code>等方法。</li>
+<li>在float元素后面添加一个不占空间的伪元素撑开包含块。我们知道元素的<a href="http://www.w3.org/TR/CSS21/visuren.html#propdef-clear" target="_blank" rel="external">clear</a>属性会让元素的上边界始终位于浮动元素的下边界之下，利用这一点就可以将包含块撑开至包含该clear元素。(这也是业界通用方法)</li>
+</ul>
+</li>
+</ul>
+<pre><code>        .clearfix:after {
+            clear: both;
+            content: &quot;.&quot;;
+            display: block;
+            height: 0;
+            visibility: hidden;
+        }
+        .clearfix { *zoom: 1; } // 兼容IE6-7
+</code></pre><h2 id="绝对定位-Absolute-positioning"><a href="#绝对定位-Absolute-positioning" class="headerlink" title="绝对定位(Absolute positioning)"></a>绝对定位(<a href="http://www.w3.org/TR/CSS21/visuren.html#absolute-positioning" target="_blank" rel="external">Absolute positioning</a>)</h2><p>绝对定位(absolute positioning)其实是很好理解的，在绝对定位的模型中，元素相对于其包含块(containing block)进行定位，绝对定位的元素会从普通流中完全删除。值得一提的是<code>fixed</code>定位的元素是<code>absolute</code>定位的子集，其包含块始终是浏览器视窗(view port)。</p>
+<p>建议好好理解一下包含块(container block)的概念，链接在<a href="http://www.w3.org/TR/CSS21/visudet.html#containing-block-details" target="_blank" rel="external">这里</a>。</p>
+<p>使用绝对定位会带来层级显示(<a href="http://www.w3.org/TR/CSS21/visuren.html#layers" target="_blank" rel="external">Layered presentation</a>)的问题，有一个<code>z-index</code>属性用于解决这个问题，比较简单，这里不再赘述。</p>
+<blockquote>
+<p>由于本人水平有限和时间仓促，文中可能有不少明显的错误，请不吝指正。</p>
+</blockquote>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="http://www.w3.org/TR/CSS21/visuren.html" target="_blank" rel="external">W3C Recommendation-Visual fomatting model</a> </li>
+<li><a href="http://www.w3.org/TR/CSS21/visudet.html" target="_blank" rel="external">W3C Recommendation-Visual formatting model details</a> </li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[理解Linux系统的软连接、硬链接以及npm link]]></title>
+      <url>http://blog.dzyhenry.com/2015/07/10/understand_the_soft_link_and_hard_link_in_linux/</url>
+      <content type="html"><![CDATA[<p>本文简单讲述了Linux中文件的软链接和硬链接的基本原理。</p>
+<blockquote>
+<p>我们知道在Unix系统中Everything is file，在Linux系统中，也保留了这一特性。</p>
+</blockquote>
+<p>Linux系统中文件被分为两部分：用户数据（user data）和元数据（metadata）。用户数据是记录文件真实内容的地方；而元数据则是文件的附加属性，如文件大小、创建时间、所有者等信息。</p>
+<a id="more"></a>
+<blockquote>
+<p>在Linux系统中，元数据中的inode号（inode是文件元数据的一部分但其并不包含文件名，inode号即<br>索引节点号）才是文件的唯一标识而非文件名。</p>
+</blockquote>
+<p>查看inode号的命令：</p>
+<pre><code>1. $stat 
+2. $ls -i
+</code></pre><p>为了解决文件共享问题，Linux系统引入了两种链接：硬链接（hard link）和软连接（soft link）。  </p>
+<h2 id="硬链接"><a href="#硬链接" class="headerlink" title="硬链接"></a>硬链接</h2><ol>
+<li><p>若一个inode号对应多个文件名，则称这些文件为【硬链接】。换言之，硬链接就是同一个文件使用了多个别名。创建硬链接的命令：<br> <code>$link oldfile newfile</code> <code>$ln oldfile newfile</code></p>
+</li>
+<li><p>硬链接有以下特点</p>
+<ul>
+<li>文件有相同的inode及data block；</li>
+<li>只能对已经存在的文件进行创建；</li>
+<li>不能交叉文件系统进行硬链接的创建；</li>
+<li>不能对目录进行创建，只可对文件创建；</li>
+<li>删除一个硬链接文件并不影响其他系统inode号的文件</li>
+</ul>
+</li>
+</ol>
+<h2 id="软连接"><a href="#软连接" class="headerlink" title="软连接"></a>软连接</h2><ol>
+<li><p>若文件用户数据块中存放的内容是另一文件的路径名的指向，则该文件就是【软连接】。软连接就是一个普通文件，只是数据块内容比较特殊。创建软链接的命令：<br> <code>$ln -s oldfile newfile</code> </p>
+</li>
+<li><p>软链接有以下特点</p>
+<ul>
+<li>软连接有自己的文件属性及权限等；</li>
+<li>可对不存在的文件或目录创建软连接</li>
+<li>软连接可对文件或目录创建</li>
+<li>创建软连接时，链接计数i_nlink不会增加</li>
+<li>删除软连接并不影响被指向的文件</li>
+</ul>
+</li>
+</ol>
+<h2 id="npm-link"><a href="#npm-link" class="headerlink" title="npm link"></a>npm link</h2><p>npm link是通过软链接实现的。如果我们开发了一个模块FileStore，然后我们希望在FileStore-Example里面引用这个模块，并且每次FileStore模块的改动都可以反映到FileStore-Exapmle里面。这时，就需要用到npm link了。<br>分两步解决：</p>
+<ul>
+<li>第一步    </li>
+</ul>
+<pre><code class="bash">$cd ~/woke/node/FileStore #进入FileStore目录
+$npm link # 创建链接到全局模式，即通常的目录:/usr/local/lib/node_modules/
+</code></pre>
+<p>这时在/user/local/lib/node_modules/目录下就创建了对FileStore的链接（软链接）。  </p>
+<ul>
+<li>第二步</li>
+</ul>
+<pre><code class="bash">cd ~/work/node/FileStore-Example #进入FileStore-Example目录
+npm link FileStore # 将全局模式的模块链接到本地，即在本地FileStore-Example目录下又创建了对全局FileStore的软链接
+</code></pre>
+<p>我们可以看到整个链接的过程是:   </p>
+<pre><code class="bash">FileStore-Example/node_modules/FileStore -&gt; /usr/local/lib/node_modules/FileStore -&gt; FileStore
+</code></pre>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>Linux的硬链接相当于对文件创建了一个别名，共享inode、data block</li>
+<li>软链接创建了一个文件，该文件有自己独立的元数据，并且data block的值为所指向文件的路径。</li>
+<li>npm link是通过软链接实现的。</li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://www.ibm.com/developerworks/cn/linux/l-cn-hardandsymb-links/" target="_blank" rel="external">理解Linux的硬链接与软链接</a><br><a href="http://www.infoq.com/cn/articles/msh-using-npm-manage-node.js-dependence" target="_blank" rel="external">如何使用NPM来管理你的Node.js依赖</a></p>
+]]></content>
+    </entry>
+    
+  
+  
+</search>

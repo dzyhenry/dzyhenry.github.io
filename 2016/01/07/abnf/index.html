@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+  <link rel="icon" href="/favicon.ico">
+  
+  <title>dzyhenry&#39;s blog | ABNF(Augmented Backus Naurm Form)</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox-1.3.4.css">
+  <!--在这里倒入jquery 方便处理部分页面的jquery-->
+  <script src="https://cdn.staticfile.org/jquery/1.7/jquery.min.js" type="text/javascript" ></script>
+</head>
+
+<body>
+	<header class="site-header navfixed-false">
+  <div class="container">
+      <h1><a href="/" title="dzyhenry&#39;s blog"><span class="octicon octicon-mark-github"></span> dzyhenry&#39;s blog</a></h1>
+      <nav class="site-header-nav" role="navigation">
+        
+              
+              <a href="/"  class=" site-header-nav-item hvr-underline-from-center" title="Home">Home</a>
+        
+              
+              <a href="/categories/"  class=" site-header-nav-item hvr-underline-from-center" title="Category">Category</a>
+        
+      </nav>
+  </div>
+</header>
+
+	
+<section class="collection-head geopattern" data-pattern-id="ABNF(Augmented Backus Naurm Form)" >
+    <div class="container">
+        <div class="collection-title">
+            <h1 class="collection-header">
+                ABNF(Augmented Backus Naurm Form)
+            </h1>
+            
+                <div class="collection-info">
+                    <span class="meta-info">
+                        <span class="octicon octicon-calendar"></span>
+                        <time datetime="2016-01-07T09:24:07.000Z" itemprop="datePublished">2016-01-07</time>
+                    </span>
+                    
+                        <span class="meta-info">
+                            <span class="octicon octicon-file-directory"></span>
+                            <a href='/categories/Compiling-Theory/' title=''>Compiling Theory</a>
+                        </span>
+                    
+                </div>
+            
+        </div>
+    </div>
+</section>
+	<section class="container">
+    <div class="columns">
+        <div class="column three-fourths" >
+            <article class="article-content markdown-body">
+                <h2 id="什么是ABNF"><a href="#什么是ABNF" class="headerlink" title="什么是ABNF?"></a>什么是<a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">ABNF</a>?</h2><p>在计算机科学中，ABNF(Augmented Backus Naur Form)是一种基于BNF的元语言，<a href="https://zh.wikipedia.org/wiki/%E5%85%83%E8%AA%9E%E8%A8%80" target="_blank" rel="external">元语言</a>是指讨论或研究语言本身时所使用的语言或符号，通俗讲就是描述语言的语言。<a href="https://zh.wikipedia.org/wiki/%E5%B7%B4%E7%A7%91%E6%96%AF%E8%8C%83%E5%BC%8F" target="_blank" rel="external">BNF</a>是一种描述<a href="https://zh.wikipedia.org/wiki/%E4%B8%8A%E4%B8%8B%E6%96%87%E6%97%A0%E5%85%B3%E6%96%87%E6%B3%95" target="_blank" rel="external">上下文无关文法</a>的语言，而上下文无关文法描述了一类形式语言。</p>
+<a id="more"></a>
+<h2 id="ABNF有什么用？"><a href="#ABNF有什么用？" class="headerlink" title="ABNF有什么用？"></a>ABNF有什么用？</h2><p>说到ABNF，第一反应可能很多人跟我一样，这又是什么鬼玩意儿？我也是最近在阅读<a href="https://httpwg.github.io/specs/rfc7230.html" target="_blank" rel="external">RFC7230</a>的时候才发现有这么个东西的，在阅读了<a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">相关文档(RFC5234)</a>过后，才发现其实我们很早以前就已经接触了ABNF，或者至少BNF，它是无所不在的(后来再一想，其实在上学时早就学过了，你懂的~)。现在，几乎每一位新编程语言书籍的作者都使用巴科斯范式来定义编程语言的语法规则。 </p>
+<p>譬如：我们在学习git的时候，git命名的定义形式便是用BNF描述的：</p>
+<pre><code>git commit [-a | --interactive | --patch] [-s] [-v] [-u&lt;mode&gt;] [--amend]
+       [--dry-run] [(-c | -C | --fixup | --squash) &lt;commit&gt;]
+       [-F &lt;file&gt; | -m &lt;msg&gt;] [--reset-author] [--allow-empty]
+       [--allow-empty-message] [--no-verify] [-e] [--author=&lt;author&gt;]
+       [--date=&lt;date&gt;] [--cleanup=&lt;mode&gt;] [--[no-]status]
+       [-i | -o] [-S[&lt;keyid&gt;]] [--] [&lt;file&gt;…]
+</code></pre><p>又或者，http协议的语法描述：</p>
+<pre><code>http-URI = &quot;http:&quot; &quot;//&quot; authority path-abempty [ &quot;?&quot; query ]
+         [ &quot;#&quot; fragment ]
+
+HTTP-message   = start-line
+               *( header-field CRLF )
+               CRLF
+               [ message-body ]
+</code></pre><p>又或者，我们可以用ABNF来描述一个for循环</p>
+<pre><code>FOR_STATEMENT ::= 
+      &quot;for&quot; &quot;(&quot; ( variable_declaration | 
+  ( expression &quot;;&quot; ) | &quot;;&quot; ) 
+      [ expression ] &quot;;&quot; 
+      [ expression ] &quot;;&quot; 
+      &quot;)&quot; statement
+</code></pre><p>所以，即便我们不自己写ABNF规则来定义语言，那么为了方便地阅读各种文档，也应该对其规则有所了解。</p>
+<h2 id="规则定义"><a href="#规则定义" class="headerlink" title="规则定义"></a>规则定义</h2><h3 id="1-规则命名-Rule-Naming"><a href="#1-规则命名-Rule-Naming" class="headerlink" title="1. 规则命名(Rule Naming)"></a>1. 规则命名(Rule Naming)</h3><p> ABNF中规则的名字是不区分大小写的，所以<code>&lt;rule&gt;，&lt;rulE&gt;，&lt;RULE&gt;</code>是一样的。 </p>
+<h3 id="2-规则形式-Rule-Form"><a href="#2-规则形式-Rule-Form" class="headerlink" title="2. 规则形式(Rule Form)"></a>2. 规则形式(Rule Form)</h3><p>规则的定义通常是如下形式:</p>
+<pre><code>    name = elements CR LF
+</code></pre><p>其中<code>name</code>是规则的名字，<code>elements</code>是一个或多个规则名或者终止描述符， <code>CR LF</code>是换行标识符。<br>For visual ease, rule definitions are left aligned.  When a rule requires multiple lines, the continuation lines are indented. The left alignment and indentation are relative to the first lines of the ABNF rules and need not match the left margin of the document.</p>
+<h2 id="3-终止符-Terminal-Value"><a href="#3-终止符-Terminal-Value" class="headerlink" title="3. 终止符 (Terminal Value)"></a>3. 终止符 (Terminal Value)</h2><p>在ABNF中，终止符指一个或多个数字字符，其中字符都是非负整数。 </p>
+<p>数字字符可以指定<code>%+基数(譬如：b=二进制；d=十进制；x=十六进制)</code>的形式，用<code>.</code>来进行数字的串联。譬如：回车的十进制为<code>%d13</code>, 十六进制为<code>%x0D</code>,回车加换行为<code>%d13.10</code></p>
+<p>ANBF也允许指定文本，用双引号括起来即可，但文本内容是不区分大小写的。所以 <code>rulename=&quot;abc&quot;</code>和<code>rulename=&quot;ABC&quot;</code>是一样的。</p>
+<h3 id="4-操作符-Operator"><a href="#4-操作符-Operator" class="headerlink" title="4. 操作符(Operator)"></a>4. 操作符(Operator)</h3><h4 id="4-1-Concatenation-Rule1-Rule2"><a href="#4-1-Concatenation-Rule1-Rule2" class="headerlink" title="4.1 Concatenation: Rule1 Rule2"></a>4.1 Concatenation: <code>Rule1 Rule2</code></h4><pre><code>foo = %x61   ;a
+bar = %x62   ;b
+mumble = foo bar foo
+; 于是mumble就可以匹配字符“aba”
+</code></pre><h4 id="4-2-Alternatives-Rule1-Rule2"><a href="#4-2-Alternatives-Rule1-Rule2" class="headerlink" title="4.2 Alternatives: Rule1/ Rule2"></a>4.2 Alternatives: <code>Rule1/ Rule2</code></h4><pre><code>foo / bar
+will accept &lt;foo&gt; or &lt;bar&gt;
+</code></pre><h4 id="4-3-Incremental-Alternatives-Rule1-Rule2"><a href="#4-3-Incremental-Alternatives-Rule1-Rule2" class="headerlink" title="4.3 Incremental Alternatives: Rule1 =/ Rule2"></a>4.3 Incremental Alternatives: <code>Rule1 =/ Rule2</code></h4><pre><code>rule = alt1 /alt2 /alt3         ;支持多种选项
+</code></pre><h4 id="4-4-Value-Range-Alternatives-c"><a href="#4-4-Value-Range-Alternatives-c" class="headerlink" title="4.4 Value Range Alternatives: %c##-##"></a>4.4 Value Range Alternatives: <code>%c##-##</code></h4><pre><code>DIGIT = %x30-39
+is equivalent to:
+DIGIT = &quot;0&quot;/&quot;1&quot;/&quot;2&quot;..../&quot;9&quot;
+</code></pre><h4 id="4-5-Sequence-Group-Rule1-Rule2-将小括号括起来的多个规则当成一个规则"><a href="#4-5-Sequence-Group-Rule1-Rule2-将小括号括起来的多个规则当成一个规则" class="headerlink" title="4.5 Sequence Group: (Rule1 Rule2), 将小括号括起来的多个规则当成一个规则"></a>4.5 Sequence Group: <code>(Rule1 Rule2)</code>, 将小括号括起来的多个规则当成一个规则</h4><pre><code>elem (foo / bar) blat
+</code></pre><h4 id="4-6-Variable-Repetition-lt-a-gt-lt-b-gt-Rule"><a href="#4-6-Variable-Repetition-lt-a-gt-lt-b-gt-Rule" class="headerlink" title="4.6 Variable Repetition: &lt;a&gt;*&lt;b&gt;Rule"></a>4.6 Variable Repetition: <code>&lt;a&gt;*&lt;b&gt;Rule</code></h4><p>在元素前加<code>*</code>指示该规则重复使用，完整的形式是：</p>
+<pre><code>&lt;a&gt;*&lt;b&gt;element   ; a和b都是十进制数字，表示至少a次，至多b次重复
+*element         ; 默认值0到infinity，表示重复0次或者无限次
+1*element        ; at least once
+3*3element       ; exactly 3 times
+</code></pre><h4 id="4-7-Specific-Repetion-nRule"><a href="#4-7-Specific-Repetion-nRule" class="headerlink" title="4.7 Specific Repetion: nRule"></a>4.7 Specific Repetion: <code>nRule</code></h4><pre><code>&lt;n&gt;element      ;n times repetion
+equivalent with
+&lt;n&gt;*&lt;n&gt;element
+</code></pre><h4 id="4-8-Optional-Sequence-Rule"><a href="#4-8-Optional-Sequence-Rule" class="headerlink" title="4.8 Optional Sequence: [Rule]"></a>4.8 Optional Sequence: <code>[Rule]</code></h4><pre><code>[foo bar]
+equivalent with:
+*1(foo bar)
+</code></pre><h4 id="4-9-Comment-Comment"><a href="#4-9-Comment-Comment" class="headerlink" title="4.9 Comment: ;Comment"></a>4.9 Comment: <code>;Comment</code></h4><p>ANBF使用semicolon作为注释的起始，换行作为注释的终止</p>
+<h4 id="4-10-Operator-Precedence"><a href="#4-10-Operator-Precedence" class="headerlink" title="4.10 Operator Precedence"></a>4.10 Operator Precedence</h4><p>操作符的优先级，如下所示：</p>
+<pre><code>Rule name = prose-val = Terminal value &gt; Comment &gt; Value range
+&gt; Repetion &gt; Grouping = Optional &gt; Concatenation &gt; Alternative
+</code></pre><h2 id="核心规则-Core-Rule"><a href="#核心规则-Core-Rule" class="headerlink" title="核心规则(Core Rule)"></a>核心规则(Core Rule)</h2><p>所谓核心规则，指的是一些用大写字符组成的ABNF<code>内置规则</code>，相当于对一些常用规则的封装。我把它们从<a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">RFC5234</a>中搬到了下面。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">Rule Name</th>
+<th style="text-align:right">Value</th>
+<th style="text-align:center">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">CR</td>
+<td style="text-align:right">%x0D</td>
+<td style="text-align:center">Carriage return(回车)</td>
+</tr>
+<tr>
+<td style="text-align:left">CRLF</td>
+<td style="text-align:right">%x0D</td>
+<td style="text-align:center">Internet standard new line</td>
+</tr>
+<tr>
+<td style="text-align:left">CTL</td>
+<td style="text-align:right">%x00-%x1F/%x7F</td>
+<td style="text-align:center">Controls, ASCII中的控制符</td>
+</tr>
+<tr>
+<td style="text-align:left">DIGIT</td>
+<td style="text-align:right">%x30-%x39</td>
+<td style="text-align:center">0~9</td>
+</tr>
+<tr>
+<td style="text-align:left">DQUOTE</td>
+<td style="text-align:right">%x22</td>
+<td style="text-align:center"><code>&quot;</code>,双引号</td>
+</tr>
+<tr>
+<td style="text-align:left">HEXDIG</td>
+<td style="text-align:right">DIGIT/“A”/“B”/“C”/“D”/“E”/“F”</td>
+<td style="text-align:center">十六进制字符</td>
+</tr>
+<tr>
+<td style="text-align:left">HTAB</td>
+<td style="text-align:right">%x09</td>
+<td style="text-align:center">水平TAB，就是tab键啦</td>
+</tr>
+<tr>
+<td style="text-align:left">LF</td>
+<td style="text-align:right">%x0A</td>
+<td style="text-align:center">换行</td>
+</tr>
+<tr>
+<td style="text-align:left">LWSP</td>
+<td style="text-align:right">*(WSP / CRLF WSP)</td>
+<td style="text-align:center">线性空白</td>
+</tr>
+<tr>
+<td style="text-align:left">OCTET</td>
+<td style="text-align:right">%x00-FF</td>
+<td style="text-align:center">8bit数据</td>
+</tr>
+<tr>
+<td style="text-align:left">SP</td>
+<td style="text-align:right">%x20</td>
+<td style="text-align:center">空格</td>
+</tr>
+<tr>
+<td style="text-align:left">VCHAR</td>
+<td style="text-align:right">%x21-7E</td>
+<td style="text-align:center">可以打印的字符</td>
+</tr>
+<tr>
+<td style="text-align:left">WSP</td>
+<td style="text-align:right">SP / HTAB</td>
+<td style="text-align:center">空白</td>
+</tr>
+</tbody>
+</table>
+<p>下面附一个网上下的ASCII码表：</p>
+<p><img src="./images/ascii.jpg" alt="Alt text"></p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><a href="https://tools.ietf.org/html/rfc5234" target="_blank" rel="external">RFC5234</a></li>
+<li><a href="http://kb.cnblogs.com/page/189566/" target="_blank" rel="external">语法规范:BNF与ABNF</a></li>
+</ul>
+
+            </article>
+            
+                
+                    
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    /**
+    * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    * LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+
+    s.src = '//dzyhenry.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</div>
+                
+            
+
+        </div>
+        <div class="column one-fourth">
+            
+                
+                <h3>Post Directory</h3>
+
+<div id="post-directory-module">
+	<section class="post-directory">
+		<p><strong class="toc-title">文章目录</strong></p>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#什么是ABNF"><span class="toc-text">什么是ABNF?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ABNF有什么用？"><span class="toc-text">ABNF有什么用？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#规则定义"><span class="toc-text">规则定义</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-规则命名-Rule-Naming"><span class="toc-text">1. 规则命名(Rule Naming)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-规则形式-Rule-Form"><span class="toc-text">2. 规则形式(Rule Form)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-终止符-Terminal-Value"><span class="toc-text">3. 终止符 (Terminal Value)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-操作符-Operator"><span class="toc-text">4. 操作符(Operator)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#4-1-Concatenation-Rule1-Rule2"><span class="toc-text">4.1 Concatenation: Rule1 Rule2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-2-Alternatives-Rule1-Rule2"><span class="toc-text">4.2 Alternatives: Rule1/ Rule2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-3-Incremental-Alternatives-Rule1-Rule2"><span class="toc-text">4.3 Incremental Alternatives: Rule1 =/ Rule2</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-4-Value-Range-Alternatives-c"><span class="toc-text">4.4 Value Range Alternatives: %c##-##</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-5-Sequence-Group-Rule1-Rule2-将小括号括起来的多个规则当成一个规则"><span class="toc-text">4.5 Sequence Group: (Rule1 Rule2), 将小括号括起来的多个规则当成一个规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-6-Variable-Repetition-lt-a-gt-lt-b-gt-Rule"><span class="toc-text">4.6 Variable Repetition: <a>*<b>Rule</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-7-Specific-Repetion-nRule"><span class="toc-text">4.7 Specific Repetion: nRule</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-8-Optional-Sequence-Rule"><span class="toc-text">4.8 Optional Sequence: [Rule]</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-9-Comment-Comment"><span class="toc-text">4.9 Comment: ;Comment</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4-10-Operator-Precedence"><span class="toc-text">4.10 Operator Precedence</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#核心规则-Core-Rule"><span class="toc-text">核心规则(Core Rule)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+	</section>
+</div>
+
+            
+        </div>
+    </div>
+</section>
+
+
+<footer class="container">
+    <div class="site-footer" role="contentinfo">
+        <div class="copyright left mobile-block">
+                &copy; 2017
+                <span title="yumemor">dzyhenry</span>
+                <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+        </div>
+
+        <ul class="site-footer-links right mobile-hidden">
+            <li>
+                <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+            </li>
+        </ul>
+
+        <a href="https://github.com/dzyhenry" target="_blank" aria-label="view source code">
+            <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+        </a>
+
+        <ul class="site-footer-links mobile-hidden">
+            
+                  
+                  <li>
+                    <a href="/"  title="Home">Home</a>
+                  </li>
+            
+                  
+                  <li>
+                    <a href="/categories/"  title="Category">Category</a>
+                  </li>
+            
+            <li>
+                <a href="/atom.xml">
+                    <span class="octicon octicon-rss" style="color:orange;"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+		<script src="/js/geopattern.js"></script>
+		<script src="/js/highlight.pack.js"></script>
+		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+
+		
+			<script src="/js/toc.js"></script>
+		
+
+		
+			<script src="/js/search.js"></script>
+
+			<script type="text/javascript">
+				$(function(){
+					var currentIndex = -1;
+					var search_path = "search.xml";
+					if (!search_path) search_path = "search.xml";
+					var path = "/" + search_path;
+					searchFunc(path, 'search', 'local-search-result');
+
+					$(document).delegate("#local-search-result>.search-result-list li","hover",function(){
+						var liNode = $("#local-search-result>.search-result-list li");
+						liNode.removeClass("hover");
+						currentIndex = $("#local-search-result>.search-result-list li").index($(this));
+						liNode.eq(currentIndex).addClass("hover");
+					})
+
+					$("#search-form").submit(function(){
+						return false;
+					})
+
+					$("#search").keydown(function(event){
+						var keyCode = event.keyCode;
+						var liNode = $("#local-search-result>.search-result-list li");
+						if(keyCode == 38 || keyCode == 40 || keyCode == 13){
+							liNode.removeClass("hover");
+							if(keyCode == 38){
+								if(currentIndex - 1 >= 0) currentIndex --;
+							}
+							if(keyCode == 40){
+								if(currentIndex + 1 < liNode.length) currentIndex ++;
+							}
+							if(keyCode == 13){
+								location.href = liNode.eq(currentIndex).find("a").attr("href");
+							}
+							liNode.eq(currentIndex).addClass("hover");
+							return false;
+						}else{
+							currentIndex = -1;
+						}
+					})
+				})
+			</script>
+		
+
+		<script src="/js/index.js"></script>
+
+		 <script src="/js/popular_repo.js"></script> 
+
+	</body>
+</html>

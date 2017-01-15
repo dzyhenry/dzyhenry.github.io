@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-cmn-Hans" prefix="og: http://ogp.me/ns#" class="han-init">
+<head>
+  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+  <link rel="icon" href="/favicon.ico">
+  
+  <title>dzyhenry&#39;s blog | 理解Linux系统的软连接、硬链接以及npm link</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/lib/fancybox/jquery.fancybox-1.3.4.css">
+  <!--在这里倒入jquery 方便处理部分页面的jquery-->
+  <script src="https://cdn.staticfile.org/jquery/1.7/jquery.min.js" type="text/javascript" ></script>
+</head>
+
+<body>
+	<header class="site-header navfixed-false">
+  <div class="container">
+      <h1><a href="/" title="dzyhenry&#39;s blog"><span class="octicon octicon-mark-github"></span> dzyhenry&#39;s blog</a></h1>
+      <nav class="site-header-nav" role="navigation">
+        
+              
+              <a href="/"  class=" site-header-nav-item hvr-underline-from-center" title="Home">Home</a>
+        
+              
+              <a href="/categories/"  class=" site-header-nav-item hvr-underline-from-center" title="Category">Category</a>
+        
+      </nav>
+  </div>
+</header>
+
+	
+<section class="collection-head geopattern" data-pattern-id="理解Linux系统的软连接、硬链接以及npm link" >
+    <div class="container">
+        <div class="collection-title">
+            <h1 class="collection-header">
+                理解Linux系统的软连接、硬链接以及npm link
+            </h1>
+            
+                <div class="collection-info">
+                    <span class="meta-info">
+                        <span class="octicon octicon-calendar"></span>
+                        <time datetime="2015-07-10T06:23:45.000Z" itemprop="datePublished">2015-07-10</time>
+                    </span>
+                    
+                        <span class="meta-info">
+                            <span class="octicon octicon-file-directory"></span>
+                            <a href='/categories/Linux/' title=''>Linux</a>
+                        </span>
+                    
+                </div>
+            
+        </div>
+    </div>
+</section>
+	<section class="container">
+    <div class="columns">
+        <div class="column three-fourths" >
+            <article class="article-content markdown-body">
+                <p>本文简单讲述了Linux中文件的软链接和硬链接的基本原理。</p>
+<blockquote>
+<p>我们知道在Unix系统中Everything is file，在Linux系统中，也保留了这一特性。</p>
+</blockquote>
+<p>Linux系统中文件被分为两部分：用户数据（user data）和元数据（metadata）。用户数据是记录文件真实内容的地方；而元数据则是文件的附加属性，如文件大小、创建时间、所有者等信息。</p>
+<a id="more"></a>
+<blockquote>
+<p>在Linux系统中，元数据中的inode号（inode是文件元数据的一部分但其并不包含文件名，inode号即<br>索引节点号）才是文件的唯一标识而非文件名。</p>
+</blockquote>
+<p>查看inode号的命令：</p>
+<pre><code>1. $stat 
+2. $ls -i
+</code></pre><p>为了解决文件共享问题，Linux系统引入了两种链接：硬链接（hard link）和软连接（soft link）。  </p>
+<h2 id="硬链接"><a href="#硬链接" class="headerlink" title="硬链接"></a>硬链接</h2><ol>
+<li><p>若一个inode号对应多个文件名，则称这些文件为【硬链接】。换言之，硬链接就是同一个文件使用了多个别名。创建硬链接的命令：<br> <code>$link oldfile newfile</code> <code>$ln oldfile newfile</code></p>
+</li>
+<li><p>硬链接有以下特点</p>
+<ul>
+<li>文件有相同的inode及data block；</li>
+<li>只能对已经存在的文件进行创建；</li>
+<li>不能交叉文件系统进行硬链接的创建；</li>
+<li>不能对目录进行创建，只可对文件创建；</li>
+<li>删除一个硬链接文件并不影响其他系统inode号的文件</li>
+</ul>
+</li>
+</ol>
+<h2 id="软连接"><a href="#软连接" class="headerlink" title="软连接"></a>软连接</h2><ol>
+<li><p>若文件用户数据块中存放的内容是另一文件的路径名的指向，则该文件就是【软连接】。软连接就是一个普通文件，只是数据块内容比较特殊。创建软链接的命令：<br> <code>$ln -s oldfile newfile</code> </p>
+</li>
+<li><p>软链接有以下特点</p>
+<ul>
+<li>软连接有自己的文件属性及权限等；</li>
+<li>可对不存在的文件或目录创建软连接</li>
+<li>软连接可对文件或目录创建</li>
+<li>创建软连接时，链接计数i_nlink不会增加</li>
+<li>删除软连接并不影响被指向的文件</li>
+</ul>
+</li>
+</ol>
+<h2 id="npm-link"><a href="#npm-link" class="headerlink" title="npm link"></a>npm link</h2><p>npm link是通过软链接实现的。如果我们开发了一个模块FileStore，然后我们希望在FileStore-Example里面引用这个模块，并且每次FileStore模块的改动都可以反映到FileStore-Exapmle里面。这时，就需要用到npm link了。<br>分两步解决：</p>
+<ul>
+<li>第一步    </li>
+</ul>
+<pre><code class="bash">$cd ~/woke/node/FileStore #进入FileStore目录
+$npm link # 创建链接到全局模式，即通常的目录:/usr/local/lib/node_modules/
+</code></pre>
+<p>这时在/user/local/lib/node_modules/目录下就创建了对FileStore的链接（软链接）。  </p>
+<ul>
+<li>第二步</li>
+</ul>
+<pre><code class="bash">cd ~/work/node/FileStore-Example #进入FileStore-Example目录
+npm link FileStore # 将全局模式的模块链接到本地，即在本地FileStore-Example目录下又创建了对全局FileStore的软链接
+</code></pre>
+<p>我们可以看到整个链接的过程是:   </p>
+<pre><code class="bash">FileStore-Example/node_modules/FileStore -&gt; /usr/local/lib/node_modules/FileStore -&gt; FileStore
+</code></pre>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><ol>
+<li>Linux的硬链接相当于对文件创建了一个别名，共享inode、data block</li>
+<li>软链接创建了一个文件，该文件有自己独立的元数据，并且data block的值为所指向文件的路径。</li>
+<li>npm link是通过软链接实现的。</li>
+</ol>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><a href="http://www.ibm.com/developerworks/cn/linux/l-cn-hardandsymb-links/" target="_blank" rel="external">理解Linux的硬链接与软链接</a><br><a href="http://www.infoq.com/cn/articles/msh-using-npm-manage-node.js-dependence" target="_blank" rel="external">如何使用NPM来管理你的Node.js依赖</a></p>
+
+            </article>
+            
+                
+                    
+<div class="comments">
+    <div id="disqus_thread"></div>
+    <script>
+    /**
+    * RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    * LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+    */
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL; // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+
+    s.src = '//dzyhenry.disqus.com/embed.js';
+
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+</div>
+                
+            
+
+        </div>
+        <div class="column one-fourth">
+            
+                
+                <h3>Post Directory</h3>
+
+<div id="post-directory-module">
+	<section class="post-directory">
+		<p><strong class="toc-title">文章目录</strong></p>
+		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#硬链接"><span class="toc-text">硬链接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#软连接"><span class="toc-text">软连接</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#npm-link"><span class="toc-text">npm link</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#总结"><span class="toc-text">总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参考"><span class="toc-text">参考</span></a></li></ol>
+	</section>
+</div>
+
+            
+        </div>
+    </div>
+</section>
+
+
+<footer class="container">
+    <div class="site-footer" role="contentinfo">
+        <div class="copyright left mobile-block">
+                &copy; 2017
+                <span title="yumemor">dzyhenry</span>
+                <a href="javascript:window.scrollTo(0,0)" class="right mobile-visible">TOP</a>
+        </div>
+
+        <ul class="site-footer-links right mobile-hidden">
+            <li>
+                <a href="javascript:window.scrollTo(0,0)" >TOP</a>
+            </li>
+        </ul>
+
+        <a href="https://github.com/dzyhenry" target="_blank" aria-label="view source code">
+            <span class="mega-octicon octicon-mark-github" title="GitHub"></span>
+        </a>
+
+        <ul class="site-footer-links mobile-hidden">
+            
+                  
+                  <li>
+                    <a href="/"  title="Home">Home</a>
+                  </li>
+            
+                  
+                  <li>
+                    <a href="/categories/"  title="Category">Category</a>
+                  </li>
+            
+            <li>
+                <a href="/atom.xml">
+                    <span class="octicon octicon-rss" style="color:orange;"></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</footer>
+
+		<script src="/js/geopattern.js"></script>
+		<script src="/js/highlight.pack.js"></script>
+		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
+
+		
+			<script src="/js/toc.js"></script>
+		
+
+		
+			<script src="/js/search.js"></script>
+
+			<script type="text/javascript">
+				$(function(){
+					var currentIndex = -1;
+					var search_path = "search.xml";
+					if (!search_path) search_path = "search.xml";
+					var path = "/" + search_path;
+					searchFunc(path, 'search', 'local-search-result');
+
+					$(document).delegate("#local-search-result>.search-result-list li","hover",function(){
+						var liNode = $("#local-search-result>.search-result-list li");
+						liNode.removeClass("hover");
+						currentIndex = $("#local-search-result>.search-result-list li").index($(this));
+						liNode.eq(currentIndex).addClass("hover");
+					})
+
+					$("#search-form").submit(function(){
+						return false;
+					})
+
+					$("#search").keydown(function(event){
+						var keyCode = event.keyCode;
+						var liNode = $("#local-search-result>.search-result-list li");
+						if(keyCode == 38 || keyCode == 40 || keyCode == 13){
+							liNode.removeClass("hover");
+							if(keyCode == 38){
+								if(currentIndex - 1 >= 0) currentIndex --;
+							}
+							if(keyCode == 40){
+								if(currentIndex + 1 < liNode.length) currentIndex ++;
+							}
+							if(keyCode == 13){
+								location.href = liNode.eq(currentIndex).find("a").attr("href");
+							}
+							liNode.eq(currentIndex).addClass("hover");
+							return false;
+						}else{
+							currentIndex = -1;
+						}
+					})
+				})
+			</script>
+		
+
+		<script src="/js/index.js"></script>
+
+		 <script src="/js/popular_repo.js"></script> 
+
+	</body>
+</html>

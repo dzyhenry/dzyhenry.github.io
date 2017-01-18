@@ -55,11 +55,10 @@
         </div>
     </div>
 </section>
-	<section class="container">
+	<section class="container" style="max-width: 800px;">
     <div class="columns">
-        <div class="column three-fourths" >
-            <article class="article-content markdown-body">
-                <p>IScroll最核心的功能就是通过JavaScript控制元素的位移来实现有关滑动的各种需求。其主要工作方式是通过监听DOM事件，改变滑动元素的CSS属性值来实现元素的位移，同时做了大量浏览器的兼容性处理。</p>
+      <article class="article-content markdown-body">
+          <p>IScroll最核心的功能就是通过JavaScript控制元素的位移来实现有关滑动的各种需求。其主要工作方式是通过监听DOM事件，改变滑动元素的CSS属性值来实现元素的位移，同时做了大量浏览器的兼容性处理。</p>
 <p>当我们在进行移动端开发的时候，难免会遇到需要通过代码来控制元素滑动的场景，比如滑动列表的“下拉刷新”功能、日历或轮播组件的“snap功能”，这个时候IScroll就可以作为一个提高我们开发效率的利器。<br><a id="more"></a><br>本文主要简单介绍一下IScroll工作的原理，帮助大家更好地使用IScroll。<br>具体的API接口和使用可以参考<a href="http://iscrolljs.com/" target="_blank" rel="external">IScroll官方文档</a></p>
 <h2 id="IScroll代码简单分析"><a href="#IScroll代码简单分析" class="headerlink" title="IScroll代码简单分析"></a>IScroll代码简单分析</h2><h3 id="DOM事件的注册"><a href="#DOM事件的注册" class="headerlink" title="DOM事件的注册"></a>DOM事件的注册</h3><p>IScroll在初始化阶段就通过<code>_initEvent</code>方法注册了需要处理的DOM事件。IScroll对象实现了<a href="https://www.w3.org/TR/DOM-Level-2-Events/events.html#Events-EventListener" target="_blank" rel="external">EventListener</a>接口，监听<code>touchstart</code>, <code>touchmove</code>, <code>touchend</code>等事件，作为用户交互的事件基础。下面是IScroll HandleEvent的部分代码，我们可以看到IScroll最核新的<code>Event Handler</code>就是<code>_start</code>，<code>_move</code>, <code>_end</code>，：</p>
 <pre><code class="javascript">handleEvent: function (e) {
@@ -188,10 +187,10 @@ maxScrollX = (Scroll Wrapper).clientWidth - Scroller.clientWidth
 </li>
 </ol>
 
-            </article>
-            
-                
-                    
+      </article>
+      
+          
+              
 <div class="comments">
     <div id="disqus_thread"></div>
     <script>
@@ -216,24 +215,8 @@ maxScrollX = (Scroll Wrapper).clientWidth - Scroller.clientWidth
     </script>
     <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
-                
-            
-
-        </div>
-        <div class="column one-fourth">
-            
-                
-                <h3>Post Directory</h3>
-
-<div id="post-directory-module">
-	<section class="post-directory">
-		<p><strong class="toc-title">文章目录</strong></p>
-		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#IScroll代码简单分析"><span class="toc-text">IScroll代码简单分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#DOM事件的注册"><span class="toc-text">DOM事件的注册</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#自定义事件"><span class="toc-text">自定义事件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#位移的实现"><span class="toc-text">位移的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#位移中的动画实现"><span class="toc-text">位移中的动画实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些常见的API或者属性"><span class="toc-text">一些常见的API或者属性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#一些常见的使用场景"><span class="toc-text">一些常见的使用场景</span></a></li></ol></li></ol>
-	</section>
-</div>
-
-            
-        </div>
+          
+      
     </div>
 </section>
 
@@ -260,8 +243,6 @@ maxScrollX = (Scroll Wrapper).clientWidth - Scroller.clientWidth
 		<script src="/js/highlight.pack.js"></script>
 		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
 
-		
-			<script src="/js/toc.js"></script>
 		
 
 		

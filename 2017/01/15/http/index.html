@@ -55,11 +55,10 @@
         </div>
     </div>
 </section>
-	<section class="container">
+	<section class="container" style="max-width: 800px;">
     <div class="columns">
-        <div class="column three-fourths" >
-            <article class="article-content markdown-body">
-                <p><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html" target="_blank" rel="external">HTTP</a>是Node.js的一个非常重要模块，为搭建HTTP服务提供了非常便利的API，通过HTTP模块，我们可以用短短地十几行代码搭建起一个HTTP Server。</p>
+      <article class="article-content markdown-body">
+          <p><a href="https://nodejs.org/dist/latest-v7.x/docs/api/http.html" target="_blank" rel="external">HTTP</a>是Node.js的一个非常重要模块，为搭建HTTP服务提供了非常便利的API，通过HTTP模块，我们可以用短短地十几行代码搭建起一个HTTP Server。</p>
 <p>在我看来，HTTP模块是Node.js中一个偏应用层的模块，依赖于EventEmitter、Stream、Net等模块。该模块替应用开发者处理了很多HTTP请求中的细节，文档中的描述主要围绕怎样合理地处理<code>request</code>和<code>response</code>。在学习的同时，也让我了解了HTTP协议中的诸多细节。</p>
 <a id="more"></a>
 <ul>
@@ -518,10 +517,10 @@ response.statusMessage = &#39;Not Found&#39;
 <li><a href="https://nodejs.org/en/docs/guides/anatomy-of-an-http-transaction/" target="_blank" rel="external">Anatomy of an Http Transaction</a></li>
 </ul>
 
-            </article>
-            
-                
-                    
+      </article>
+      
+          
+              
 <div class="comments">
     <div id="disqus_thread"></div>
     <script>
@@ -546,24 +545,8 @@ response.statusMessage = &#39;Not Found&#39;
     </script>
     <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
 </div>
-                
-            
-
-        </div>
-        <div class="column one-fourth">
-            
-                
-                <h3>Post Directory</h3>
-
-<div id="post-directory-module">
-	<section class="post-directory">
-		<p><strong class="toc-title">文章目录</strong></p>
-		<ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-Agent"><span class="toc-text">Class: http.Agent</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-createConnection-options-callback"><span class="toc-text">agent.createConnection(options[, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-destroy"><span class="toc-text">agent.destroy()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-getName"><span class="toc-text">agent.getName()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-maxFreeSockets"><span class="toc-text">agent.maxFreeSockets</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-maxSockets"><span class="toc-text">agent.maxSockets</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-requests"><span class="toc-text">agent.requests</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#agent-sockets"><span class="toc-text">agent.sockets</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-ClientRequest"><span class="toc-text">Class: http.ClientRequest</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘abort’"><span class="toc-text">Event: ‘abort’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘aborted’"><span class="toc-text">Event: ‘aborted’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘connect’"><span class="toc-text">Event: ‘connect’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘continue’"><span class="toc-text">Event: ‘continue’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘response’"><span class="toc-text">Event: ‘response’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘socket’"><span class="toc-text">Event: ‘socket’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘upgrade’"><span class="toc-text">Event: ‘upgrade’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-abort"><span class="toc-text">request.abort()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-end-data-encoding-callback"><span class="toc-text">request.end([data][, encoding][, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-flushHeaders"><span class="toc-text">request.flushHeaders()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-setTimeout-timeout-callback"><span class="toc-text">request.setTimeout(timeout[, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#request-write-chunk-encoding-callback"><span class="toc-text">request.write(chunk[, encoding][, callback])</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-Server"><span class="toc-text">Class: http.Server</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘checkContinue’"><span class="toc-text">Event: ‘checkContinue’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘checkExpectation’"><span class="toc-text">Event: ‘checkExpectation’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘clientError’"><span class="toc-text">Event: ‘clientError’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘close’"><span class="toc-text">Event: ‘close’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘connect’-1"><span class="toc-text">Event: ‘connect’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘connection’"><span class="toc-text">Event: ‘connection’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘request’"><span class="toc-text">Event: ‘request’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-close-callback"><span class="toc-text">server.close([callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-listening"><span class="toc-text">server.listening</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-maxHeadersCount"><span class="toc-text">server.maxHeadersCount</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-setTimeout-msecs-callback"><span class="toc-text">server.setTimeout(msecs, callback)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#server-timeout"><span class="toc-text">server.timeout</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-ServerResponse"><span class="toc-text">http.ServerResponse</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘close’-1"><span class="toc-text">Event: ‘close’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘finish’"><span class="toc-text">Event: ‘finish’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-addTrailers-headers"><span class="toc-text">response.addTrailers(headers)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-end-data-encoding-callback"><span class="toc-text">response.end([data][, encoding][, callback])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-finished"><span class="toc-text">response.finished</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-getHeader-name"><span class="toc-text">response.getHeader(name)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-headerSent"><span class="toc-text">response.headerSent</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-removeHeader-name"><span class="toc-text">response.removeHeader(name)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-setHeader-name-value"><span class="toc-text">response.setHeader(name, value)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-setTimeout-msecs-callback"><span class="toc-text">response.setTimeout(msecs, callback)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-statusCode"><span class="toc-text">response.statusCode</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-statusMessage"><span class="toc-text">response.statusMessage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#resonse-write-chunk-encoding-callback"><span class="toc-text">resonse.write(chunk[, encoding][, callback]);</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#response-writeHead-statusCode-statusMessage-headers"><span class="toc-text">response.writeHead(statusCode[, statusMessage][, headers])</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Class-http-IncomingMessage"><span class="toc-text">Class: http.IncomingMessage</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘aborted’-1"><span class="toc-text">Event: ‘aborted’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event-‘close’-2"><span class="toc-text">Event: ‘close’</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-destroy-error"><span class="toc-text">message.destroy([error])</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-headers"><span class="toc-text">message.headers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-httpVersion"><span class="toc-text">message.httpVersion</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-method"><span class="toc-text">message.method</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-rawHeaders"><span class="toc-text">message.rawHeaders</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-rawTrailers-amp-message-trailers"><span class="toc-text">message.rawTrailers & message.trailers</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-setTimeout-msecs-callback"><span class="toc-text">message.setTimeout(msecs, callback)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-statusCode-amp-message-statusMessage"><span class="toc-text">message.statusCode & message.statusMessage</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-socket"><span class="toc-text">message.socket</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#message-url"><span class="toc-text">message.url</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-createServer-requestListener"><span class="toc-text">http.createServer([requestListener])</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-get-options-callback"><span class="toc-text">http.get(options[, callback])</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-globalAgent"><span class="toc-text">http.globalAgent</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#http-request-options-callback"><span class="toc-text">http.request(options[, callback])</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#References"><span class="toc-text">References</span></a>
-	</section>
-</div>
-
-            
-        </div>
+          
+      
     </div>
 </section>
 
@@ -590,8 +573,6 @@ response.statusMessage = &#39;Not Found&#39;
 		<script src="/js/highlight.pack.js"></script>
 		<script src="/lib/fancybox/jquery.fancybox-1.3.4.pack.js"></script>
 
-		
-			<script src="/js/toc.js"></script>
 		
 
 		

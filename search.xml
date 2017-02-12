@@ -52,8 +52,7 @@
     <entry>
       <title><![CDATA[Dmitry Soshnikov's ECMAScript Analysis]]></title>
       <url>http://blog.dzyhenry.com/2017/01/15/ecma_learing/</url>
-      <content type="html"><![CDATA[<p><strong>If you want to learn JavaScript deeply and professionally (at theoretical level of the ECMAScript), these would be the best gift for you.</strong><br>Since the original articles are somehow scattered, here we gather them together.</p>
-<a id="more"></a>
+      <content type="html"><![CDATA[<p><strong>If you want to learn JavaScript deeply and professionally (at theoretical level of the ECMAScript), these would be the best gift for you.</strong><br>Since the original articles are somehow scattered, here we gather them together.<br><a id="more"></a></p>
 <h2 id="ECAMScript-262-3"><a href="#ECAMScript-262-3" class="headerlink" title="ECAMScript-262-3"></a>ECAMScript-262-3</h2><ul>
 <li><a href="http://dmitrysoshnikov.com/ecmascript/chapter-1-execution-contexts/" target="_blank" rel="external">ECMA-262-3 in detail. Chapter 1. Execution Contexts.</a></li>
 <li><a href="http://dmitrysoshnikov.com/ecmascript/chapter-2-variable-object/" target="_blank" rel="external">ECMA-262-3 in detail. Chapter 2. Variable object.</a></li>
@@ -81,10 +80,10 @@
 <li><a href="http://dmitrysoshnikov.com/notes/pattern-matching/" target="_blank" rel="external">Pattern Matching</a></li>
 <li><a href="https://medium.com/@DmitrySoshnikov/oo-relationships-5020163ab162#.iynhkwp4k" target="_blank" rel="external">OO Relationships</a></li>
 </ul>
-<blockquote>
-<p>As we mentioned, an environment specifies the meaning of an identifier (of a symbol) in the expression.</p>
+<h2 id="Some-Personal-Abstract"><a href="#Some-Personal-Abstract" class="headerlink" title="Some Personal Abstract"></a>Some Personal Abstract</h2><blockquote>
+<p>A special data structure of the call-stack which is called an activation record is used as a storage ot the environment bindings. Sometimes it’s also called a call-stack frame.<br>– from <code>ECMA-262-5 in detail. Chapter 3.1. Lexical environments: Commo Theory.</code></p>
+<p>One of the terminologies used in the theory for the activatoin objects in <code>environment frames</code>(analogy with call-statck frames). We use this terminology to underline the differences of implementation - that environment frames continue to exists if there are references to them from closures. Also we use this terminology to underline the higher-abstracted concepts - i.e. without concentrating on lower level stack and address structures, we just say that there are environments, and how they are implemented - is already a derived question.<br>– from <code>ECMA-262-5 in detail. Chapter 3.1. Lexical environments: Commo Theory.</code></p>
 </blockquote>
-<p>Activation Record Model Vs. Environment Frames Model(Activation Object in ES3)<br>Call Stack Vs. Execution Context Stack</p>
 ]]></content>
     </entry>
     
